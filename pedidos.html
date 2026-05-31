@@ -147,6 +147,10 @@
       font-weight: 900;
     }
 
+    .pedido-pendiente {
+  background: #eef8ff;
+  border: 2px solid #9ed8ff;
+}
 
     .pedido-terminado {
       background: #e8f8ea;
@@ -542,7 +546,7 @@
       const terminado = pedido.estado === "terminado";
 
       return `
-        <div class="pedido ${terminado ? "pedido-terminado" : ""}">
+<div class="pedido ${terminado ? "pedido-terminado" : "pedido-pendiente"}">
           <label class="select-box ${modoSeleccion ? "active" : ""}">
             <input type="checkbox" ${checked} onchange="togglePedidoSeleccionado('${pedido.id}', this.checked)">
             Seleccionar este pedido
