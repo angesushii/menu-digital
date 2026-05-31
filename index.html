@@ -1034,10 +1034,10 @@
     const WHATSAPP = "56974701060";
     const EXTRA_INGREDIENTE = 500;
     const STORAGE_ULTIMO_PEDIDO = "ultimoPedidoSushiAnge";
-    const MIN_HANDROLL = 3;
-    const MIN_SUSHI_10 = 4;
-    const MIN_SUSHIBURGER = 4;
-    const MIN_ACEVICHADO = 4;
+    const MIN_HANDROLL = 4;
+    const MIN_SUSHI_10 = 5;
+    const MIN_SUSHIBURGER = 5;
+    const MIN_ACEVICHADO = 5;
     let opcionesHorarioActuales = [];
     let horaManualSeleccionada = "";
     let minutoManualSeleccionado = "";
@@ -1161,8 +1161,31 @@
         .trim();
     }
 
-    function crearOpciones(valorActual = "", seleccionados = []) {
-      const disponibles = ingredientes.filter(ing => ing === valorActual || !seleccionados.includes(ing));
+    function ingredientesIncompatibles(ingrediente) {
+      const limpio = limpiarIngrediente(ingrediente);
+
+      if (limpio === "Pollo") return ["Camarón"];
+      if (limpio === "Camarón") return ["Pollo"];
+
+      return [];
+    }
+
+    function crearOpciones(valorActual = "", seleccionados = [], aplicarReglaPolloCamaron = true) {
+      const incompatibles = aplicarReglaPolloCamaron
+        ? seleccionados.flatMap(ingredientesIncompatibles)
+        : [];
+
+      const disponibles = ingredientes.filter(ing => {
+        if (ing === valorActual) return true;
+
+        const limpio = limpiarIngrediente(ing);
+
+        if (seleccionados.includes(ing)) return false;
+        if (incompatibles.includes(limpio)) return false;
+
+        return true;
+      });
+
       return `<option value="">Seleccionar ingrediente</option>` + disponibles.map(ing => `<option value="${ing}" ${ing === valorActual ? "selected" : ""}>${ing}</option>`).join("");
     }
 
@@ -1284,6 +1307,7 @@
         if (!select) return;
 
         const valorActual = select.value;
+
         const seleccionadosOtros = [1,2,3,4]
           .filter(x => x !== n)
           .map(x => document.getElementById(`ing${x}-${id}-${rollIndex}`))
@@ -1291,7 +1315,20 @@
           .map(s => s.value)
           .filter(Boolean);
 
-        select.innerHTML = crearOpciones(valorActual, seleccionadosOtros);
+        const seleccionadosPrimerosTres = [1,2,3]
+          .filter(x => x !== n)
+          .map(x => document.getElementById(`ing${x}-${id}-${rollIndex}`))
+          .filter(Boolean)
+          .map(s => s.value)
+          .filter(Boolean);
+
+        const aplicarReglaPolloCamaron = n <= 3;
+
+        select.innerHTML = crearOpciones(
+          valorActual,
+          aplicarReglaPolloCamaron ? seleccionadosPrimerosTres : seleccionadosOtros,
+          aplicarReglaPolloCamaron
+        );
       });
     }
 
@@ -1353,6 +1390,13 @@
 
         if (extraVisible && !ing4) {
           alert(`Debes elegir el ingrediente 4 de: ${rolls[i]} o cerrar esa opción.`);
+          return null;
+        }
+
+        const primerosTresLimpios = [ing1, ing2, ing3].map(limpiarIngrediente);
+
+        if (primerosTresLimpios.includes("Pollo") && primerosTresLimpios.includes("Camarón")) {
+          alert(`No puedes elegir Pollo y Camarón juntos en los primeros 3 ingredientes de: ${rolls[i]}. Puedes usar uno de ellos como ingrediente 4.`);
           return null;
         }
 
