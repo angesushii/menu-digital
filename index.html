@@ -866,6 +866,10 @@
       <label>Nombre</label>
       <input id="cliente" placeholder="Ej: Pedro" />
 
+      <label>WhatsApp</label>
+      <input id="telefonoCliente" inputmode="numeric" placeholder="Ej: 912345678" />
+      <p class="small">Escribe tu número sin +56. Lo usaremos para avisarte cuando tu pedido esté listo.</p>
+
       <div id="repeatCard" class="repeat-card">
         <h3>🍣 ¿Quieres repetir tu último pedido?</h3>
         <p id="repeatResumen">Tenemos guardado el último pedido realizado desde este celular.</p>
@@ -951,6 +955,12 @@
         <p class="small">Necesitamos tu nombre para identificar el pedido.</p>
       </div>
 
+      <div id="telefonoFinalCard" class="nombre-final-card">
+        <label>WhatsApp</label>
+        <input id="telefonoClienteFinal" inputmode="numeric" placeholder="Ej: 912345678" />
+        <p class="small">Lo usaremos para avisarte cuando tu pedido esté listo.</p>
+      </div>
+
       <div class="final-grid">
         <div class="option-group">
           <label>Salsas</label>
@@ -990,8 +1000,21 @@
         </div>
       </div>
 
+      <label>Forma de pago</label>
+
+<div class="payment-options">
+  <label>
+    <input type="radio" name="pago" value="Efectivo" checked>
+    💵 Efectivo
+  </label>
+</div>
+
+<p class="small">
+  Actualmente sólo aceptamos pagos en efectivo.
+</p>
       <label>Observaciones finales</label>
-      <textarea id="observacionesFinales" rows="2" placeholder="Ej: sin palitos, agregar bastante soya, pago con transferencia..."></textarea>
+      <textarea id="observacionesFinales" rows="2" placeholder="Ej: sin palitos, agregar bastante soya..."></textarea>
+      
 
       <button class="confirm-btn" onclick="enviarWhatsApp()">Confirmar y enviar por WhatsApp</button>
       <button class="secondary-btn" onclick="cerrarConfirmacion()">Seguir editando pedido</button>
@@ -1089,10 +1112,11 @@
     let builderTipo = null;
     let builderEnvoltura = null;
 
-    function guardarUltimoPedidoLocal(cliente, total) {
+    function guardarUltimoPedidoLocal(cliente, total, telefonoCliente = "") {
       try {
         localStorage.setItem(STORAGE_ULTIMO_PEDIDO, JSON.stringify({
           cliente,
+          telefonoCliente,
           total,
           carrito,
           fechaISO: new Date().toISOString()
@@ -1138,6 +1162,10 @@
 
       if (ultimo.cliente && ultimo.cliente !== "No indicado") {
         document.getElementById("cliente").value = ultimo.cliente;
+      }
+
+      if (ultimo.telefonoCliente) {
+        document.getElementById("telefonoCliente").value = limpiarTelefonoChile(ultimo.telefonoCliente);
       }
 
       renderCarrito();
@@ -1653,6 +1681,47 @@
 
 
 
+
+function limpiarTelefonoChile(numero) {
+  let tel = String(numero || "").replace(/\D/g, "");
+
+  if (tel.startsWith("56")) {
+    tel = tel.slice(2);
+  }
+
+  if (tel.startsWith("0")) {
+    tel = tel.slice(1);
+  }
+
+  return tel;
+}
+
+function obtenerTelefonoCliente() {
+  const telefonoInicial = limpiarTelefonoChile(document.getElementById("telefonoCliente")?.value || "");
+  const telefonoFinal = limpiarTelefonoChile(document.getElementById("telefonoClienteFinal")?.value || "");
+  return telefonoInicial || telefonoFinal;
+}
+
+function telefonoWhatsAppChile(numero) {
+  const limpio = limpiarTelefonoChile(numero);
+  return limpio ? `56${limpio}` : "";
+}
+
+function actualizarCampoTelefonoFinal() {
+  const telefonoInicial = limpiarTelefonoChile(document.getElementById("telefonoCliente")?.value || "");
+  const card = document.getElementById("telefonoFinalCard");
+
+  if (!card) return;
+
+  if (!telefonoInicial) {
+    card.classList.add("active");
+  } else {
+    card.classList.remove("active");
+    const inputFinal = document.getElementById("telefonoClienteFinal");
+    if (inputFinal) inputFinal.value = "";
+  }
+}
+
 function obtenerNombreCliente() {
   const nombreInicial = document.getElementById("cliente")?.value.trim() || "";
   const nombreFinal = document.getElementById("clienteFinal")?.value.trim() || "";
@@ -1683,6 +1752,7 @@ async function abrirConfirmacion() {
   document.getElementById("finalPanel").classList.add("active");
   await generarOpcionesHorario();
   actualizarCampoNombreFinal();
+  actualizarCampoTelefonoFinal();
 
   // Oculta solo el botón de continuar, pero mantiene el total visible
   document.querySelector(".send-btn").style.display = "none";
@@ -2066,7 +2136,7 @@ function cerrarConfirmacion() {
       }
     });
 
-    async function guardarPedidoFirebase(cliente, total) {
+    async function guardarPedidoFirebase(cliente, total, telefonoCliente) {
       if (!window.db || !window.addDoc || !window.collection) return false;
 
       const datosFinales = getDatosFinales();
@@ -2077,6 +2147,8 @@ function cerrarConfirmacion() {
         window.collection(window.db, "pedidos"),
         {
           cliente,
+          telefonoCliente,
+          telefonoWhatsApp: telefonoWhatsAppChile(telefonoCliente),
           total,
           productos: carrito,
           datosFinales,
@@ -2114,6 +2186,7 @@ botonConfirmar.style.cursor = "not-allowed";
       }
 
       const cliente = obtenerNombreCliente();
+      const telefonoCliente = obtenerTelefonoCliente();
       const total = carrito.reduce((acc, item) => acc + item.precioFinal, 0);
       const datosFinales = getDatosFinales();
 
@@ -2143,10 +2216,25 @@ botonConfirmar.style.cursor = "not-allowed";
         return;
       }
 
-      guardarUltimoPedidoLocal(cliente, total);
+      if (!telefonoCliente || telefonoCliente.length < 8) {
+        alert("Debes escribir un número de WhatsApp válido para avisarte cuando tu pedido esté listo.");
+        actualizarCampoTelefonoFinal();
+        const inputTel = document.getElementById("telefonoClienteFinal");
+        if (inputTel) inputTel.focus();
+
+        if (botonConfirmar) {
+          botonConfirmar.disabled = false;
+          botonConfirmar.textContent = "Confirmar y enviar por WhatsApp";
+          botonConfirmar.style.opacity = "1";
+          botonConfirmar.style.cursor = "pointer";
+        }
+        return;
+      }
+
+      guardarUltimoPedidoLocal(cliente, total, telefonoCliente);
 
       try {
-        await guardarPedidoFirebase(cliente, total);
+        await guardarPedidoFirebase(cliente, total, telefonoCliente);
       } catch (error) {
         console.error("Error guardando pedido:", error);
         alert("El pedido se enviará por WhatsApp, pero no se pudo guardar en el registro interno.");
@@ -2167,6 +2255,7 @@ botonConfirmar.style.cursor = "not-allowed";
 
       mensaje += `*Total: ${formatCLP(total)}*%0A%0A`;
       mensaje += `Nombre: ${cliente}%0A`;
+      mensaje += `WhatsApp cliente: ${telefonoWhatsAppChile(telefonoCliente)}%0A`;
       if (datosFinales.horarioRetiro) {
         mensaje += `Retiro: ${datosFinales.horarioRetiro.label}%0A`;
       }
@@ -2189,6 +2278,10 @@ window.location.href =
     document.addEventListener("input", function(e) {
       if (e.target && e.target.id === "cliente") {
         actualizarCampoNombreFinal();
+      }
+
+      if (e.target && e.target.id === "telefonoCliente") {
+        actualizarCampoTelefonoFinal();
       }
     });
 
