@@ -747,6 +747,25 @@
       margin-top: 0;
     }
 
+
+    .payment-card {
+      background: #fffafa;
+      border: 1px solid #ffd0d0;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .payment-fixed {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 900;
+      text-align: center;
+      color: #111;
+    }
+
     .option-group {
       background: #fffafa;
       border: 1px solid #ffd0d0;
@@ -1000,21 +1019,8 @@
         </div>
       </div>
 
-      <label>Forma de pago</label>
-
-<div class="payment-options">
-  <label>
-    <input type="radio" name="pago" value="Efectivo" checked>
-    💵 Efectivo
-  </label>
-</div>
-
-<p class="small">
-  Actualmente sólo aceptamos pagos en efectivo.
-</p>
       <label>Observaciones finales</label>
       <textarea id="observacionesFinales" rows="2" placeholder="Ej: sin palitos, agregar bastante soya..."></textarea>
-      
 
       <button class="confirm-btn" onclick="enviarWhatsApp()">Confirmar y enviar por WhatsApp</button>
       <button class="secondary-btn" onclick="cerrarConfirmacion()">Seguir editando pedido</button>
@@ -1057,13 +1063,14 @@
     const WHATSAPP = "56974701060";
     const EXTRA_INGREDIENTE = 500;
     const STORAGE_ULTIMO_PEDIDO = "ultimoPedidoSushiAnge";
-    const MIN_HANDROLL = 6;
-    const MIN_SUSHI_10 = 7;
-    const MIN_SUSHIBURGER = 6;
-    const MIN_ACEVICHADO = 7;
+    const MIN_HANDROLL = 4;
+    const MIN_SUSHI_10 = 5;
+    const MIN_SUSHIBURGER = 5;
+    const MIN_ACEVICHADO = 5;
     let opcionesHorarioActuales = [];
     let horaManualSeleccionada = "";
     let minutoManualSeleccionado = "";
+    let intervaloHorarioActual = null;
 
     const ingredientes = [
       "Queso Philadelphia",
@@ -1752,6 +1759,14 @@ async function abrirConfirmacion() {
   document.getElementById("finalPanel").classList.add("active");
   await generarOpcionesHorario();
   actualizarCampoNombreFinal();
+
+  if (intervaloHorarioActual) clearInterval(intervaloHorarioActual);
+  intervaloHorarioActual = setInterval(() => {
+    const panel = document.getElementById("finalPanel");
+    if (panel && panel.classList.contains("active")) {
+      generarOpcionesHorario();
+    }
+  }, 60000);
   actualizarCampoTelefonoFinal();
 
   // Oculta solo el botón de continuar, pero mantiene el total visible
@@ -1762,6 +1777,11 @@ async function abrirConfirmacion() {
 }
 function cerrarConfirmacion() {
   document.getElementById("finalPanel").classList.remove("active");
+
+  if (intervaloHorarioActual) {
+    clearInterval(intervaloHorarioActual);
+    intervaloHorarioActual = null;
+  }
 
   // Vuelve a mostrar el botón de continuar
   document.querySelector(".send-btn").style.display = "block";
@@ -1853,7 +1873,7 @@ function cerrarConfirmacion() {
       );
 
       const snap = await window.getDocs(q);
-      let total = 0;
+      const pendientes = [];
 
       snap.forEach(docSnap => {
         const pedido = docSnap.data();
@@ -1874,10 +1894,26 @@ function cerrarConfirmacion() {
           if (!fechaRetiro || fechaRetiro > limiteCercano) return;
         }
 
-        total += Number(pedido.tiempoPreparacion || calcularTiempoPreparacion(pedido.productos || []));
+        pendientes.push({
+          fechaPedido,
+          minutos: Number(pedido.tiempoPreparacion || calcularTiempoPreparacion(pedido.productos || []))
+        });
       });
 
-      return total;
+      if (!pendientes.length) return 0;
+
+      pendientes.sort((a, b) => a.fechaPedido - b.fechaPedido);
+
+      const totalPendiente = pendientes.reduce((acc, p) => acc + p.minutos, 0);
+
+      // Resta el tiempo real transcurrido desde el pedido pendiente más antiguo.
+      // Ejemplo: si había 70 min de cola y pasaron 20 min, quedan 50 min aprox.
+      const minutosTranscurridos = Math.max(
+        0,
+        Math.floor((ahora - pendientes[0].fechaPedido) / 60000)
+      );
+
+      return Math.max(0, totalPendiente - minutosTranscurridos);
     }
 
     async function generarOpcionesHorario() {
@@ -2110,6 +2146,7 @@ function cerrarConfirmacion() {
         palillos: quierePalillos,
         cantidadPalillos,
         horarioRetiro,
+        formaPago: "Efectivo",
         observacionesFinales: document.getElementById("observacionesFinales").value.trim()
       };
     }
@@ -2152,6 +2189,7 @@ function cerrarConfirmacion() {
           total,
           productos: carrito,
           datosFinales,
+          formaPago: "Efectivo",
           horarioRetiro,
           tiempoPreparacion,
           estado: "nuevo",
@@ -2259,6 +2297,7 @@ botonConfirmar.style.cursor = "not-allowed";
       if (datosFinales.horarioRetiro) {
         mensaje += `Retiro: ${datosFinales.horarioRetiro.label}%0A`;
       }
+      mensaje += `Forma de pago: Efectivo%0A`;
       mensaje += `Salsas: ${datosFinales.salsas.join(", ")}%0A`;
 
 if (datosFinales.palillos === "Si") {
