@@ -471,7 +471,7 @@
 
     .builder-options {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
       margin-top: 10px;
     }
@@ -884,13 +884,14 @@
     <section class="card builder-card">
       <div class="builder-head">
         <h2>Arma tu pedido</h2>
-        <p>Elige sushi, hand roll o sushi burger. Luego selecciona envoltura e ingredientes.</p>
+        <p>Elige sushi, hand roll, sushi burger o acevichado. Luego selecciona ingredientes.</p>
       </div>
       <div class="builder-body">
         <div class="builder-options">
           <button class="type-btn" onclick="seleccionarTipoPersonalizado('sushi')">🍣 Sushi<br><small>10 piezas</small></button>
           <button class="type-btn" onclick="seleccionarTipoPersonalizado('handroll')">🌯 Hand roll<br><small>1 unidad</small></button>
           <button class="type-btn" onclick="seleccionarTipoPersonalizado('sushiburger')">🍔 Sushi burger<br><small>1 unidad</small></button>
+          <button class="type-btn" onclick="seleccionarTipoPersonalizado('acevichado')">🐟 Acevichado<br><small>10 piezas</small></button>
         </div>
         <div id="builderConfig"></div>
       </div>
@@ -1036,6 +1037,7 @@
     const MIN_HANDROLL = 3;
     const MIN_SUSHI_10 = 4;
     const MIN_SUSHIBURGER = 4;
+    const MIN_ACEVICHADO = 4;
     let opcionesHorarioActuales = [];
     let horaManualSeleccionada = "";
     let minutoManualSeleccionado = "";
@@ -1077,8 +1079,8 @@
       { id: "D", nombre: "Promo D", precio: 10500, piezas: "30 piezas", rolls: ["10 envueltos en tempura", "10 envueltos en palta", "10 envueltos en queso"] },
       { id: "E", nombre: "Promo E", precio: 15000, piezas: "50 piezas", rolls: ["10 envueltos en sésamo", "10 envueltos en sésamo", "10 envueltos en ciboulette", "10 envueltos en ciboulette", "10 envueltos en nori"] },
       { id: "F", nombre: "Promo F", precio: 16500, piezas: "50 piezas", rolls: ["10 envueltos en tempura", "10 envueltos en queso", "10 envueltos en palta", "10 envueltos en nori", "10 envueltos en ciboulette"] },
-      { id: "G", nombre: "Promo G", precio: 17500, piezas: "50 piezas", rolls: ["20 envueltos en tempura", "20 envueltos en palta", "10 envueltos en queso"] },
-      { id: "H", nombre: "Promo H", precio: 9500, piezas: "20 acevichados", rolls: ["20 acevichados"] }
+      { id: "G", nombre: "Promo G", precio: 17500, piezas: "50 piezas", rolls: ["10 envueltos en tempura", "10 envueltos en tempura", "10 envueltos en palta", "10 envueltos en palta", "10 envueltos en queso"] },
+      { id: "H", nombre: "Promo H", precio: 9500, piezas: "20 acevichados", rolls: ["10 acevichados", "10 acevichados"] }
     ];
 
     let carrito = [];
@@ -1410,6 +1412,7 @@
       if (tipo === "sushi") buttons[0].classList.add("active");
       if (tipo === "handroll") buttons[1].classList.add("active");
       if (tipo === "sushiburger") buttons[2].classList.add("active");
+      if (tipo === "acevichado") buttons[3].classList.add("active");
 
       renderBuilderConfig(datosExistentes);
     }
@@ -1443,6 +1446,10 @@
 
       if (builderTipo === "sushiburger") {
         builderEnvoltura = { id: "sushiburger", nombre: "Sushi burger", precio: 6000 };
+      }
+
+      if (builderTipo === "acevichado") {
+        builderEnvoltura = { id: "acevichado", nombre: "10 piezas acevichados", precio: 5200 };
       }
 
       cont.innerHTML = `<div id="personalizadoIngredientes"></div>`;
@@ -1487,6 +1494,9 @@
       } else if (builderTipo === "sushiburger") {
         nombre = "Sushi burger";
         piezas = "1 unidad";
+      } else if (builderTipo === "acevichado") {
+        nombre = "10 piezas acevichados";
+        piezas = "10 piezas";
       } else {
         nombre = `Sushi ${builderEnvoltura.nombre}`;
       }
@@ -1680,7 +1690,9 @@ function cerrarConfirmacion() {
         const nombre = String(prod.nombre || "").toLowerCase();
         const piezas = String(prod.piezas || "").toLowerCase();
 
-        if (nombre.includes("hand roll")) {
+        if (nombre.includes("acevichado")) {
+          minutos += MIN_ACEVICHADO;
+        } else if (nombre.includes("hand roll")) {
           minutos += MIN_HANDROLL;
         } else if (nombre.includes("sushi burger") || piezas.includes("2 sushi burgers")) {
           const cantidad = piezas.includes("2") ? 2 : 1;
