@@ -664,7 +664,7 @@
         await cargarPedidos();
 
         if (telefono) {
-          window.open(`https://wa.me/${telefono}?text=${mensajePedidoListo(pedido)}`, "_blank");
+         window.location.href = `https://wa.me/${telefono}?text=${mensajePedidoListo(pedido)}`;
         } else {
           alert("Pedido finalizado, pero no hay WhatsApp del cliente guardado.");
         }
