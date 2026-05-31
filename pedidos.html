@@ -442,6 +442,7 @@
     let pedidosSeleccionados = new Set();
     let vistaActiva = "pendientes";
     let unsubscribePedidos = null;
+    let intervaloRespaldoPedidos = null;
 
     function formatCLP(valor) {
       return "$" + Number(valor || 0).toLocaleString("es-CL");
@@ -785,11 +786,53 @@
       `;
     }
 
-    window.cargarPedidos = function cargarPedidos() {
+    function aplicarPedidosDesdeSnapshot(snap) {
       const fechaSeleccionada = document.getElementById("fecha").value;
+
+      pedidosGlobales = [];
+
+      snap.forEach(docSnap => {
+        pedidosGlobales.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+
+      pedidosDiaActual = pedidosGlobales.filter(
+        data => obtenerFechaLocalPedido(data) === fechaSeleccionada
+      );
+
+      actualizarBotonesSeleccion();
+      renderPedidosDia();
+    }
+
+    async function cargarPedidosManual(mostrarCargando = true) {
       const lista = document.getElementById("pedidosLista");
 
-      lista.innerHTML = `<div class="empty">Cargando pedidos...</div>`;
+      if (mostrarCargando) {
+        lista.innerHTML = `<div class="empty">Actualizando pedidos...</div>`;
+      }
+
+      try {
+        const q = query(
+          collection(db, "pedidos"),
+          orderBy("fechaISO", "desc")
+        );
+
+        const snap = await getDocs(q);
+        aplicarPedidosDesdeSnapshot(snap);
+
+      } catch (error) {
+        console.error(error);
+        if (mostrarCargando) {
+          lista.innerHTML =
+            `<div class="empty">No se pudieron cargar los pedidos. Revisa las reglas de Firestore.</div>`;
+        }
+      }
+    }
+
+    function iniciarEscuchaPedidos() {
+      const lista = document.getElementById("pedidosLista");
 
       if (unsubscribePedidos) {
         unsubscribePedidos();
@@ -804,29 +847,32 @@
       unsubscribePedidos = onSnapshot(
         q,
         (snap) => {
-          pedidosGlobales = [];
-
-          snap.forEach(docSnap => {
-            pedidosGlobales.push({
-              id: docSnap.id,
-              ...docSnap.data()
-            });
-          });
-
-          pedidosDiaActual = pedidosGlobales.filter(
-            data => obtenerFechaLocalPedido(data) === fechaSeleccionada
-          );
-
-          actualizarBotonesSeleccion();
-          renderPedidosDia();
+          aplicarPedidosDesdeSnapshot(snap);
         },
         (error) => {
-          console.error(error);
+          console.error("Error en actualización automática:", error);
           lista.innerHTML =
-            `<div class="empty">No se pudieron cargar los pedidos. Revisa las reglas de Firestore.</div>`;
+            `<div class="empty">No se pudo activar la actualización automática. Usa el botón Actualizar.</div>`;
         }
       );
+    }
+
+    window.cargarPedidos = async function cargarPedidos() {
+      // Botón Actualizar: fuerza una carga manual y reinicia la escucha en tiempo real.
+      await cargarPedidosManual(true);
+      iniciarEscuchaPedidos();
     };
+
+    function iniciarRespaldoActualizacion() {
+      if (intervaloRespaldoPedidos) {
+        clearInterval(intervaloRespaldoPedidos);
+      }
+
+      // Respaldo: si el tiempo real falla o el navegador se queda dormido, actualiza igual.
+      intervaloRespaldoPedidos = setInterval(() => {
+        cargarPedidosManual(false);
+      }, 10000);
+    }
 
     function fechaHoyChile() {
       return new Date().toLocaleDateString("en-CA", { timeZone: "America/Santiago" });
@@ -846,6 +892,8 @@ if (loginBox) loginBox.classList.add("hidden");
 
 document.getElementById("panel").classList.remove("hidden");
 cargarPedidos();
+iniciarEscuchaPedidos();
+iniciarRespaldoActualizacion();
   </script>
 </body>
 </html>
