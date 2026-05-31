@@ -330,6 +330,18 @@
       font-size: 14px;
     }
 
+
+    .obs-destacada{
+  margin-top:10px;
+  padding:12px;
+  background:#fff4cc;
+  border:2px solid #f4c542;
+  border-radius:12px;
+  font-weight:800;
+  color:#7a5300;
+  font-size:15px;
+}
+    
     .empty {
       background: white;
       border-radius: 18px;
@@ -563,7 +575,17 @@
 
               ${prod.extraSalmon ? `<div class="muted">Adicional salmón: ${formatCLP(prod.extraSalmon)}</div>` : ""}
               ${prod.extraCuarto ? `<div class="muted">Ingrediente extra: ${formatCLP(prod.extraCuarto)}</div>` : ""}
-              ${prod.observaciones ? `<div class="muted">Obs: ${prod.observaciones}</div>` : ""}
+              ${prod.observaciones ? `
+  <div class="obs-destacada">
+    📝 ${prod.observaciones}
+  </div>
+` : ""}
+
+${prod.obs ? `
+  <div class="obs-destacada">
+    📝 ${prod.obs}
+  </div>
+` : ""}
               ${prod.obs ? `<div class="muted">Obs: ${prod.obs}</div>` : ""}
             </div>
           `).join("")}
@@ -574,7 +596,13 @@
             <div class="muted">Forma de pago: ${pedido.formaPago || datosFinales.formaPago || "Efectivo"}</div>
             <div class="muted">Salsas: ${(datosFinales.salsas || ["No indicado"]).join(", ")}</div>
             <div class="muted">Palillos: ${datosFinales.palillos === "Si" ? "Sí, " + datosFinales.cantidadPalillos : "No"}</div>
-            ${datosFinales.observacionesFinales ? `<div class="muted">Obs finales: ${datosFinales.observacionesFinales}</div>` : ""}
+            
+           ${datosFinales.observacionesFinales ? `
+  <div class="obs-destacada">
+    📝 ${datosFinales.observacionesFinales}
+  </div>
+` : ""}
+
           </div>
 
           ${terminado ? `
