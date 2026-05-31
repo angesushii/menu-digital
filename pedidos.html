@@ -130,14 +130,21 @@
       color: #111;
     }
 
+    .btn-warning {
+      background: linear-gradient(135deg, #FFD54F, #F9A825);
+      color: #333;
+      font-weight: 900;
+    }
+
     .btn-select {
       background: #111;
       color: white;
     }
 
     .btn-danger {
-      background: var(--rojo);
+      background: linear-gradient(135deg, #25D366, #128C7E);
       color: white;
+      font-weight: 900;
     }
 
 
@@ -393,7 +400,7 @@
           <button id="btnModoSeleccion" class="btn-select" onclick="activarSeleccionPedidos()">Seleccionar pedidos</button>
           <button id="btnSeleccionarTodos" class="btn-soft hidden" onclick="seleccionarTodosPedidos()">Seleccionar todo</button>
           <button id="btnMarcarTerminados" class="btn-danger hidden" onclick="marcarSeleccionados('terminado')">Marcar como terminado</button>
-          <button id="btnMarcarPendientes" class="btn-soft hidden" onclick="marcarSeleccionados('nuevo')">Marcar como pendiente</button>
+          <button id="btnMarcarPendientes" class="btn-warning hidden" onclick="marcarSeleccionados('nuevo')">Marcar como pendiente</button>
           <button id="btnCancelarSeleccion" class="btn-soft hidden" onclick="cancelarSeleccionPedidos()">Cancelar selección</button>
         </div>
       </div>
@@ -561,6 +568,7 @@
           <div class="producto">
             <strong>Datos finales</strong>
             <div class="muted">WhatsApp: ${telefonoWhatsAppPedido(pedido) || "No indicado"}</div>
+            <div class="muted">Forma de pago: ${pedido.formaPago || datosFinales.formaPago || "Efectivo"}</div>
             <div class="muted">Salsas: ${(datosFinales.salsas || ["No indicado"]).join(", ")}</div>
             <div class="muted">Palillos: ${datosFinales.palillos === "Si" ? "Sí, " + datosFinales.cantidadPalillos : "No"}</div>
             ${datosFinales.observacionesFinales ? `<div class="muted">Obs finales: ${datosFinales.observacionesFinales}</div>` : ""}
@@ -807,7 +815,9 @@
 
     document.getElementById("fecha").value = fechaHoyChile();
 
-document.getElementById("loginBox").classList.add("hidden");
+const loginBox = document.getElementById("loginBox");
+if (loginBox) loginBox.classList.add("hidden");
+
 document.getElementById("panel").classList.remove("hidden");
 cargarPedidos();
   </script>
