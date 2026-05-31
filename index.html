@@ -1883,12 +1883,16 @@ function cerrarConfirmacion() {
         const fechaPedido = getFechaPedidoObj(pedido);
         if (!fechaPedido) return;
 
-        const fechaLocal = fechaPedido.toLocaleDateString("en-CA", { timeZone: "America/Santiago" });
+        const fechaLocal = fechaPedido.toLocaleDateString("en-CA", {
+          timeZone: "America/Santiago"
+        });
+
         if (fechaLocal !== hoy) return;
 
         const horario = pedido.horarioRetiro || pedido.datosFinales?.horarioRetiro || {};
         const tipo = horario.tipo || "asap";
 
+        // Los pedidos agendados muy lejanos no bloquean la cola inmediata.
         if (tipo === "agendado") {
           const fechaRetiro = getFechaHoraRetiroObj(pedido);
           if (!fechaRetiro || fechaRetiro > limiteCercano) return;
@@ -1896,7 +1900,10 @@ function cerrarConfirmacion() {
 
         pendientes.push({
           fechaPedido,
-          minutos: Number(pedido.tiempoPreparacion || calcularTiempoPreparacion(pedido.productos || []))
+          minutos: Number(
+            pedido.tiempoPreparacion ||
+            calcularTiempoPreparacion(pedido.productos || [])
+          )
         });
       });
 
@@ -1904,16 +1911,19 @@ function cerrarConfirmacion() {
 
       pendientes.sort((a, b) => a.fechaPedido - b.fechaPedido);
 
-      const totalPendiente = pendientes.reduce((acc, p) => acc + p.minutos, 0);
+      let finCola = new Date(pendientes[0].fechaPedido);
 
-      // Resta el tiempo real transcurrido desde el pedido pendiente más antiguo.
-      // Ejemplo: si había 70 min de cola y pasaron 20 min, quedan 50 min aprox.
-      const minutosTranscurridos = Math.max(
-        0,
-        Math.floor((ahora - pendientes[0].fechaPedido) / 60000)
-      );
+      pendientes.forEach(pedido => {
+        const inicioPedido = pedido.fechaPedido > finCola
+          ? pedido.fechaPedido
+          : finCola;
 
-      return Math.max(0, totalPendiente - minutosTranscurridos);
+        finCola = sumarMinutos(inicioPedido, pedido.minutos);
+      });
+
+      const colaRestante = Math.ceil((finCola - ahora) / 60000);
+
+      return Math.max(0, colaRestante);
     }
 
     async function generarOpcionesHorario() {
