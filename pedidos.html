@@ -375,13 +375,7 @@
   </header>
 
   <main>
-    <section id="loginBox" class="card login">
-      <h2>Ingresar</h2>
-      <label>Clave</label>
-      <input id="clave" type="password" placeholder="Ingresa tu clave" />
-      <button class="primary" onclick="entrar()">Entrar</button>
-      <div id="loginError" class="error"></div>
-    </section>
+
 
     <section id="panel" class="hidden">
       <div class="card">
@@ -393,7 +387,6 @@
             <input id="fecha" type="date" />
           </div>
           <button class="btn-soft" onclick="cargarPedidos()">Actualizar</button>
-          <button class="btn-soft" onclick="salir()">Salir</button>
         </div>
 
         <div class="bulk-actions">
@@ -434,7 +427,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const CLAVE_ADMIN = "1234";
 
     let pedidosGlobales = [];
     let pedidosDiaActual = [];
@@ -615,25 +607,7 @@
       }
     }
 
-    window.entrar = function entrar() {
-      const clave = document.getElementById("clave").value;
-      const error = document.getElementById("loginError");
 
-      if (clave !== CLAVE_ADMIN) {
-        error.textContent = "Clave incorrecta.";
-        return;
-      }
-
-      sessionStorage.setItem("pedidosOK", "true");
-      document.getElementById("loginBox").classList.add("hidden");
-      document.getElementById("panel").classList.remove("hidden");
-      cargarPedidos();
-    };
-
-    window.salir = function salir() {
-      sessionStorage.removeItem("pedidosOK");
-      location.reload();
-    };
 
     window.activarSeleccionPedidos = function activarSeleccionPedidos() {
       modoSeleccion = true;
@@ -833,11 +807,9 @@
 
     document.getElementById("fecha").value = fechaHoyChile();
 
-    if (sessionStorage.getItem("pedidosOK") === "true") {
-      document.getElementById("loginBox").classList.add("hidden");
-      document.getElementById("panel").classList.remove("hidden");
-      cargarPedidos();
-    }
+document.getElementById("loginBox").classList.add("hidden");
+document.getElementById("panel").classList.remove("hidden");
+cargarPedidos();
   </script>
 </body>
 </html>
