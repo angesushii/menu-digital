@@ -1088,7 +1088,23 @@
     let minutoManualSeleccionado = "";
     let intervaloHorarioActual = null;
 
-
+    const ingredientes = [
+      "Queso Philadelphia",
+      "Queso Gauda",
+      "Pollo",
+      "Camarón",
+      "Kanikama",
+      "Salmón (+1300) ",
+      "Palta",
+      "Pimentón",
+      "Choclo",
+      "Choclito",
+      "Champiñón",
+      "Cebollín",
+      "Palmito",
+      "Zanahoria",
+      "Ciboulette"
+    ];
 
 
     let ingredientesDisponibles = {};
@@ -1106,8 +1122,12 @@
     function ingredienteDisponible(ing) {
       const exacto = ingredientesDisponibles[ing];
       const limpio = ingredientesDisponiblesLimpios[limpiarIngrediente(ing)];
+      const normalizado = ingredientesDisponiblesLimpios[normalizarTextoIngrediente(ing)];
 
-      if (exacto === false || limpio === false) return false;
+      if (exacto === false || limpio === false || normalizado === false) {
+        return false;
+      }
+
       return true;
     }
 
@@ -1117,6 +1137,14 @@
         : `❌ ${limpiarIngrediente(ing)} (agotado)`;
     }
 
+    function normalizarTextoIngrediente(txt) {
+      return limpiarIngrediente(txt)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
     function aplicarDisponibilidadIngredientes(data = {}) {
       ingredientesDisponibles = estadoInicialIngredientes();
       ingredientesDisponiblesLimpios = {};
@@ -1124,17 +1152,18 @@
       const disponibles = data.disponibles || {};
       const disponiblesLimpios = data.disponiblesLimpios || {};
 
-      ingredientesDisponibles = {
-        ...ingredientesDisponibles,
-        ...disponibles
-      };
-
-      Object.keys(ingredientesDisponibles).forEach(ing => {
-        ingredientesDisponiblesLimpios[limpiarIngrediente(ing)] = ingredientesDisponibles[ing] !== false;
+      Object.keys(disponibles).forEach(key => {
+        ingredientesDisponibles[key] = disponibles[key] !== false;
       });
 
-      Object.keys(disponiblesLimpios).forEach(ing => {
-        ingredientesDisponiblesLimpios[limpiarIngrediente(ing)] = disponiblesLimpios[ing] !== false;
+      Object.keys(ingredientesDisponibles).forEach(key => {
+        ingredientesDisponiblesLimpios[limpiarIngrediente(key)] = ingredientesDisponibles[key] !== false;
+        ingredientesDisponiblesLimpios[normalizarTextoIngrediente(key)] = ingredientesDisponibles[key] !== false;
+      });
+
+      Object.keys(disponiblesLimpios).forEach(key => {
+        ingredientesDisponiblesLimpios[limpiarIngrediente(key)] = disponiblesLimpios[key] !== false;
+        ingredientesDisponiblesLimpios[normalizarTextoIngrediente(key)] = disponiblesLimpios[key] !== false;
       });
     }
 
@@ -1338,7 +1367,7 @@
       return `<option value="">Seleccionar ingrediente</option>` + disponibles.map(ing => {
         const agotado = !ingredienteDisponible(ing);
         const seleccionado = ing === valorActual ? "selected" : "";
-        const disabled = agotado && ing !== valorActual ? "disabled" : "";
+        const disabled = agotado ? "disabled" : "";
 
         return `<option value="${ing}" ${seleccionado} ${disabled}>${etiquetaIngrediente(ing)}</option>`;
       }).join("");
