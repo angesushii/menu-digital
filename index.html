@@ -1098,31 +1098,20 @@
         lista = [...disponibles];
       }
 
-      ingredientes = disponibles;
-      ingredientesDisponibles = [...ingredientes];
+      // Mostrar todos los ingredientes de la lista.
+      // Los no disponibles aparecerán con ❌ y bloqueados.
+      ingredientes = [...lista];
+      ingredientesDisponibles = [...disponibles];
       ingredientesCargados = true;
 
       refrescarSelectsIngredientesAbiertos();
     }
 
-async function esperarFirebase() {
-  for (let i = 0; i < 50; i++) {
-    if (window.db && window.doc && window.getDoc) {
-      return true;
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-
-  return false;
-}
-
 async function cargarIngredientesDesdeFirebase() {
-
-  const listo = await esperarFirebase();
-
-  if (!listo) {
-    console.error("Firebase no cargó");
+  if (!window.db || !window.doc || !window.getDoc) {
+    ingredientes = [];
+    ingredientesDisponibles = [];
+    ingredientesCargados = true;
     return;
   }
 
@@ -1130,14 +1119,18 @@ async function cargarIngredientesDesdeFirebase() {
     const ref = window.doc(window.db, "config", "ingredientes");
     const snap = await window.getDoc(ref);
 
-    console.log("Documento ingredientes:", snap.data());
-
     if (snap.exists()) {
       aplicarStockIngredientes(snap.data());
+    } else {
+      ingredientes = [];
+      ingredientesDisponibles = [];
+      ingredientesCargados = true;
     }
-
   } catch (error) {
-    console.error(error);
+    console.error("No se pudo cargar ingredientes:", error);
+    ingredientes = [];
+    ingredientesDisponibles = [];
+    ingredientesCargados = true;
   }
 }
 
@@ -1160,6 +1153,13 @@ async function cargarIngredientesDesdeFirebase() {
     function ingredienteDisponible(ing) {
       return ingredientesDisponibles.includes(ing);
     }
+
+    function etiquetaIngrediente(ing) {
+      return ingredienteDisponible(ing)
+        ? ing
+        : `❌ ${limpiarIngrediente(ing)} (agotado)`;
+    }
+
 
     function refrescarSelectsIngredientesAbiertos() {
       document.querySelectorAll("select[id^='ing']").forEach(select => {
@@ -1296,15 +1296,22 @@ async function cargarIngredientesDesdeFirebase() {
       }
 
       if (!ingredientes.length) {
-        return `<option value="">No hay ingredientes disponibles</option>`;
+        return `<option value="">No hay ingredientes configurados</option>`;
       }
 
       const incompatibles = aplicarReglaPolloCamaron
         ? seleccionados.flatMap(ingredientesIncompatibles)
         : [];
 
-      const disponibles = ingredientes.filter(ing => {
+      const opciones = ingredientes.filter(ing => {
         const limpio = limpiarIngrediente(ing);
+        const agotado = !ingredienteDisponible(ing);
+
+        // Mantiene visible el valor actual para no perderlo si el stock cambia.
+        if (ing === valorActual) return true;
+
+        // Los agotados aparecen, pero bloqueados.
+        if (agotado) return true;
 
         if (seleccionados.includes(ing)) return false;
         if (incompatibles.includes(limpio)) return false;
@@ -1312,10 +1319,17 @@ async function cargarIngredientesDesdeFirebase() {
         return true;
       });
 
-      return `<option value="">Seleccionar ingrediente</option>` + disponibles
-        .map(ing => `<option value="${ing}" ${ing === valorActual ? "selected" : ""}>${ing}</option>`)
+      return `<option value="">Seleccionar ingrediente</option>` + opciones
+        .map(ing => {
+          const agotado = !ingredienteDisponible(ing);
+          const selected = ing === valorActual ? "selected" : "";
+          const disabled = agotado ? "disabled" : "";
+
+          return `<option value="${ing}" ${selected} ${disabled}>${etiquetaIngrediente(ing)}</option>`;
+        })
         .join("");
     }
+
 
     function togglePromos() {
       const section = document.getElementById("promoSection");
