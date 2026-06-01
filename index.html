@@ -1075,50 +1075,37 @@
     let minutoManualSeleccionado = "";
     let intervaloHorarioActual = null;
 
-    let ingredientes = [
-      "Queso Philadelphia",
-      "Queso Gauda",
-      "Pollo",
-      "Camarón",
-      "Kanikama",
-      "Salmón (+1300) ",
-      "Palta",
-      "Pimentón",
-      "Choclo",
-      "Choclito",
-      "Champiñón",
-      "Cebollín",
-      "Palmito",
-      "Zanahoria",
-      "Ciboulette"
-    ];
-
-
-    let ingredientesBase = [];
+    let ingredientes = [];
     let ingredientesDisponibles = [];
+    let ingredientesCargados = false;
 
     function aplicarStockIngredientes(data = {}) {
-      if (!ingredientesBase.length) {
-        ingredientesBase = [...ingredientes];
+      let lista = [];
+      let disponibles = [];
+
+      if (Array.isArray(data.lista)) {
+        lista = data.lista;
       }
 
-      const lista = Array.isArray(data.lista) && data.lista.length
-        ? data.lista
-        : ingredientesBase;
+      if (Array.isArray(data.disponibles)) {
+        disponibles = data.disponibles;
+      } else if (data.disponibles && typeof data.disponibles === "object") {
+        lista = lista.length ? lista : Object.keys(data.disponibles);
+        disponibles = lista.filter(ing => data.disponibles[ing] !== false);
+      }
 
-      const disponibles = Array.isArray(data.disponibles)
-        ? data.disponibles
-        : lista;
+      if (!lista.length && disponibles.length) {
+        lista = [...disponibles];
+      }
 
       ingredientes = disponibles.filter(ing => lista.includes(ing));
       ingredientesDisponibles = [...ingredientes];
+      ingredientesCargados = true;
 
       refrescarSelectsIngredientesAbiertos();
     }
 
     async function cargarIngredientesDesdeFirebase() {
-      aplicarStockIngredientes({});
-
       if (!window.db || !window.doc || !window.getDoc) return;
 
       try {
@@ -1127,9 +1114,16 @@
 
         if (snap.exists()) {
           aplicarStockIngredientes(snap.data());
+        } else {
+          ingredientes = [];
+          ingredientesDisponibles = [];
+          ingredientesCargados = true;
         }
       } catch (error) {
         console.error("No se pudo cargar ingredientes:", error);
+        ingredientes = [];
+        ingredientesDisponibles = [];
+        ingredientesCargados = true;
       }
     }
 
@@ -1166,7 +1160,6 @@
         }
       });
     }
-
 
     const envolturas = [
       { id: "nori", nombre: "Nori", precio: 3500 },
@@ -1284,6 +1277,14 @@
     }
 
     function crearOpciones(valorActual = "", seleccionados = [], aplicarReglaPolloCamaron = true) {
+      if (!ingredientesCargados) {
+        return `<option value="">Cargando ingredientes...</option>`;
+      }
+
+      if (!ingredientes.length) {
+        return `<option value="">No hay ingredientes disponibles</option>`;
+      }
+
       const incompatibles = aplicarReglaPolloCamaron
         ? seleccionados.flatMap(ingredientesIncompatibles)
         : [];
@@ -1296,14 +1297,6 @@
 
         return true;
       });
-
-      if (
-        valorActual &&
-        ingredienteDisponible(valorActual) &&
-        !disponibles.includes(valorActual)
-      ) {
-        disponibles.push(valorActual);
-      }
 
       return `<option value="">Seleccionar ingrediente</option>` + disponibles
         .map(ing => `<option value="${ing}" ${ing === valorActual ? "selected" : ""}>${ing}</option>`)
@@ -2428,10 +2421,14 @@ window.location.href =
       }
     });
 
-    cargarIngredientesDesdeFirebase();
-    iniciarEscuchaIngredientes();
-    renderMenu();
-    mostrarSugerenciaUltimoPedido();
+    async function iniciarCarta() {
+      await cargarIngredientesDesdeFirebase();
+      iniciarEscuchaIngredientes();
+      renderMenu();
+      mostrarSugerenciaUltimoPedido();
+    }
+
+    iniciarCarta();
   </script>
 </body>
 </html>
