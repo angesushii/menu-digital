@@ -591,6 +591,14 @@
       if (panel) panel.classList.toggle("active");
     };
 
+    function estadoLimpioIngredientes() {
+      const limpio = {};
+      Object.keys(ingredientesDisponiblesAdmin || {}).forEach(ing => {
+        limpio[limpiarIngrediente(ing)] = ingredientesDisponiblesAdmin[ing] !== false;
+      });
+      return limpio;
+    }
+
     function renderIngredientesAdmin() {
       const grid = document.getElementById("ingredientesAdminGrid");
       const status = document.getElementById("ingredientesStatus");
@@ -637,6 +645,7 @@
         } else {
           await setDoc(ref, {
             disponibles: ingredientesDisponiblesAdmin,
+            disponiblesLimpios: estadoLimpioIngredientes(),
             actualizadoEn: new Date().toISOString()
           });
         }
@@ -654,6 +663,7 @@
       try {
         await setDoc(doc(db, "config", "ingredientes"), {
           disponibles: ingredientesDisponiblesAdmin,
+          disponiblesLimpios: estadoLimpioIngredientes(),
           actualizadoEn: new Date().toISOString()
         }, { merge: true });
       } catch (error) {
