@@ -2469,7 +2469,10 @@ botonConfirmar.style.cursor = "not-allowed";
         alert("El pedido se enviará por WhatsApp, pero no se pudo guardar en el registro interno.");
       }
 
-      let mensaje = `Hola, quiero hacer un pedido:%0A%0A`;
+let mensaje =
+  `🍣 *SUSHI ANGE* 🍣%0A` +
+  `⚠️ Por favor no editar este mensaje para evitar errores en el pedido.%0A%0A` +
+  `Hola, quiero hacer un pedido:%0A%0A`;
       carrito.forEach((item, i) => {
         mensaje += `*${i + 1}. ${item.nombre}* - ${formatCLP(item.precioFinal)}%0A`;
         mensaje += `${item.piezas}%0A`;
@@ -2498,8 +2501,10 @@ if (datosFinales.palillos === "Si") {
 }
 
 if (datosFinales.observacionesFinales) {
-  mensaje += `Observaciones finales: ${datosFinales.observacionesFinales}`;
+  mensaje += `Observaciones finales: ${datosFinales.observacionesFinales}%0A`;
 }
+
+mensaje += `%0A⏱️ El tiempo informado es una estimación y puede variar según la cantidad de pedidos en preparación.`;
 
 window.location.href =
   `https://wa.me/${WHATSAPP}?text=${mensaje}`;
