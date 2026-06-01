@@ -1105,11 +1105,24 @@
       refrescarSelectsIngredientesAbiertos();
     }
 
+async function esperarFirebase() {
+  for (let i = 0; i < 50; i++) {
+    if (window.db && window.doc && window.getDoc) {
+      return true;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  return false;
+}
+
 async function cargarIngredientesDesdeFirebase() {
-  if (!window.db || !window.doc || !window.getDoc) {
-    ingredientes = [];
-    ingredientesDisponibles = [];
-    ingredientesCargados = true;
+
+  const listo = await esperarFirebase();
+
+  if (!listo) {
+    console.error("Firebase no cargó");
     return;
   }
 
@@ -1117,18 +1130,14 @@ async function cargarIngredientesDesdeFirebase() {
     const ref = window.doc(window.db, "config", "ingredientes");
     const snap = await window.getDoc(ref);
 
+    console.log("Documento ingredientes:", snap.data());
+
     if (snap.exists()) {
       aplicarStockIngredientes(snap.data());
-    } else {
-      ingredientes = [];
-      ingredientesDisponibles = [];
-      ingredientesCargados = true;
     }
+
   } catch (error) {
-    console.error("No se pudo cargar ingredientes:", error);
-    ingredientes = [];
-    ingredientesDisponibles = [];
-    ingredientesCargados = true;
+    console.error(error);
   }
 }
 
