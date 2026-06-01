@@ -380,86 +380,6 @@
       transform: scale(1.2);
     }
 
-
-    .ingredientes-admin-card {
-      background: rgba(255,255,255,.96);
-      border-radius: var(--radio);
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--sombra);
-      border: 1px solid rgba(0,0,0,.05);
-    }
-
-    .ingredientes-admin-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-    }
-
-    .ingredientes-admin-head h2 {
-      margin: 0;
-      font-size: 21px;
-    }
-
-    .ingredientes-toggle-btn {
-      background: #111;
-      color: white;
-      white-space: nowrap;
-    }
-
-    .ingredientes-panel {
-      display: none;
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid #eee;
-    }
-
-    .ingredientes-panel.active {
-      display: block;
-    }
-
-    .ingredientes-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-
-    .ingrediente-check {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #f8f8f8;
-      border: 1px solid #eee;
-      border-radius: 12px;
-      padding: 10px;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    .ingrediente-check input {
-      width: auto;
-      transform: scale(1.15);
-    }
-
-    .ingrediente-check.agotado {
-      background: #f1f1f1;
-      color: #888;
-      text-decoration: line-through;
-    }
-
-    .ingredientes-status {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #666;
-      font-weight: 700;
-    }
-
-    @media (max-width: 760px) {
-      .ingredientes-grid { grid-template-columns: 1fr; }
-    }
-
     .hidden { display: none; }
 
     @media (max-width: 760px) {
@@ -480,22 +400,6 @@
 
 
     <section id="panel" class="hidden">
-
-      <section class="ingredientes-admin-card">
-        <div class="ingredientes-admin-head" onclick="toggleIngredientesPanel()">
-          <div>
-            <h2>🥑 Ingredientes</h2>
-            <div class="muted">Activa o desactiva ingredientes según stock.</div>
-          </div>
-          <button type="button" class="ingredientes-toggle-btn">Ver / ocultar</button>
-        </div>
-
-        <div id="ingredientesPanel" class="ingredientes-panel">
-          <div id="ingredientesAdminGrid" class="ingredientes-grid"></div>
-          <div id="ingredientesStatus" class="ingredientes-status">Cargando ingredientes...</div>
-        </div>
-      </section>
-
       <div class="card">
         <h2>Ver pedidos</h2>
 
@@ -531,9 +435,7 @@
       doc,
       deleteDoc,
       updateDoc,
-      onSnapshot,
-      setDoc,
-      getDoc
+      onSnapshot
     } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -556,122 +458,6 @@
     let vistaActiva = "pendientes";
     let unsubscribePedidos = null;
     let intervaloRespaldoPedidos = null;
-
-
-    const INGREDIENTES_BASE = [
-      "Queso Philadelphia",
-      "Queso Gauda",
-      "Pollo",
-      "Camarón",
-      "Kanikama",
-      "Salmón (+1300) ",
-      "Palta",
-      "Pimentón",
-      "Choclo",
-      "Choclito",
-      "Champiñón",
-      "Cebollín",
-      "Palmito",
-      "Zanahoria",
-      "Ciboulette"
-    ];
-
-    let ingredientesDisponiblesAdmin = {};
-
-    function estadoInicialIngredientes() {
-      const estado = {};
-      INGREDIENTES_BASE.forEach(ing => {
-        estado[ing] = true;
-      });
-      return estado;
-    }
-
-    window.toggleIngredientesPanel = function toggleIngredientesPanel() {
-      const panel = document.getElementById("ingredientesPanel");
-      if (panel) panel.classList.toggle("active");
-    };
-
-    function estadoLimpioIngredientes() {
-      const limpio = {};
-      Object.keys(ingredientesDisponiblesAdmin || {}).forEach(ing => {
-        limpio[limpiarIngrediente(ing)] = ingredientesDisponiblesAdmin[ing] !== false;
-      });
-      return limpio;
-    }
-
-    function renderIngredientesAdmin() {
-      const grid = document.getElementById("ingredientesAdminGrid");
-      const status = document.getElementById("ingredientesStatus");
-
-      if (!grid) return;
-
-      grid.innerHTML = INGREDIENTES_BASE.map(ing => {
-        const disponible = ingredientesDisponiblesAdmin[ing] !== false;
-        const texto = limpiarIngrediente(ing);
-
-        return `
-          <label class="ingrediente-check ${disponible ? "" : "agotado"}">
-            <input
-              type="checkbox"
-              ${disponible ? "checked" : ""}
-              onchange="cambiarDisponibilidadIngrediente(this.dataset.ing, this.checked)"
-              data-ing="${ing.replace(/"/g, "&quot;")}"
-            >
-            ${disponible ? "✅" : "❌"} ${texto} ${disponible ? "" : "(agotado)"}
-          </label>
-        `;
-      }).join("");
-
-      if (status) {
-        const agotados = INGREDIENTES_BASE.filter(ing => ingredientesDisponiblesAdmin[ing] === false).length;
-        status.textContent = agotados
-          ? `${agotados} ingrediente(s) marcado(s) como agotado(s).`
-          : "Todos los ingredientes están disponibles.";
-      }
-    }
-
-    async function cargarIngredientesAdmin() {
-      ingredientesDisponiblesAdmin = estadoInicialIngredientes();
-
-      try {
-        const ref = doc(db, "config", "ingredientes");
-        const snap = await getDoc(ref);
-
-        if (snap.exists()) {
-          ingredientesDisponiblesAdmin = {
-            ...ingredientesDisponiblesAdmin,
-            ...(snap.data().disponibles || {})
-          };
-        } else {
-          await setDoc(ref, {
-            disponibles: ingredientesDisponiblesAdmin,
-            disponiblesLimpios: estadoLimpioIngredientes(),
-            actualizadoEn: new Date().toISOString()
-          });
-        }
-      } catch (error) {
-        console.error("No se pudieron cargar los ingredientes:", error);
-      }
-
-      renderIngredientesAdmin();
-    }
-
-    window.cambiarDisponibilidadIngrediente = async function cambiarDisponibilidadIngrediente(ingrediente, disponible) {
-      ingredientesDisponiblesAdmin[ingrediente] = disponible;
-      renderIngredientesAdmin();
-
-      try {
-        await setDoc(doc(db, "config", "ingredientes"), {
-          disponibles: ingredientesDisponiblesAdmin,
-          disponiblesLimpios: estadoLimpioIngredientes(),
-          actualizadoEn: new Date().toISOString()
-        }, { merge: true });
-      } catch (error) {
-        console.error("No se pudo guardar el ingrediente:", error);
-        alert("No se pudo guardar el cambio. Revisa las reglas de Firestore.");
-      }
-    };
-
 
     function formatCLP(valor) {
       return "$" + Number(valor || 0).toLocaleString("es-CL");
@@ -1135,7 +921,6 @@ const loginBox = document.getElementById("loginBox");
 if (loginBox) loginBox.classList.add("hidden");
 
 document.getElementById("panel").classList.remove("hidden");
-cargarIngredientesAdmin();
 cargarPedidos();
 iniciarEscuchaPedidos();
 iniciarRespaldoActualizacion();
