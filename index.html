@@ -432,19 +432,6 @@
       box-shadow: 0 0 0 4px rgba(214,40,40,.10);
     }
 
-
-    .agotado-info {
-      background: #f1f1f1;
-      color: #777;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 13px;
-      font-weight: 800;
-      line-height: 1.35;
-    }
-
     .small {
       font-size: 13px;
       color: #666;
@@ -1049,7 +1036,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDUMySSnAS5mpEFtncooBFn-268Z8LuD5Y",
@@ -1070,9 +1057,6 @@
     window.getDocs = getDocs;
     window.query = query;
     window.orderBy = orderBy;
-    window.doc = doc;
-    window.getDoc = getDoc;
-    window.onSnapshot = onSnapshot;
   </script>
 
   <script>
@@ -1105,133 +1089,6 @@
       "Zanahoria",
       "Ciboulette"
     ];
-
-
-    let ingredientesDisponibles = {};
-    let ingredientesDisponiblesLimpios = {};
-    let unsubscribeIngredientes = null;
-
-    function estadoInicialIngredientes() {
-      const estado = {};
-      ingredientes.forEach(ing => {
-        estado[ing] = true;
-      });
-      return estado;
-    }
-
-    function ingredienteDisponible(ing) {
-      const exacto = ingredientesDisponibles[ing];
-      const limpio = ingredientesDisponiblesLimpios[limpiarIngrediente(ing)];
-      const normalizado = ingredientesDisponiblesLimpios[normalizarTextoIngrediente(ing)];
-
-      if (exacto === false || limpio === false || normalizado === false) {
-        return false;
-      }
-
-      return true;
-    }
-
-    function etiquetaIngrediente(ing) {
-      return ingredienteDisponible(ing)
-        ? ing
-        : `❌ ${limpiarIngrediente(ing)} (agotado)`;
-    }
-
-    function normalizarTextoIngrediente(txt) {
-      return limpiarIngrediente(txt)
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim();
-    }
-
-    function aplicarDisponibilidadIngredientes(data = {}) {
-      ingredientesDisponibles = estadoInicialIngredientes();
-      ingredientesDisponiblesLimpios = {};
-
-      const disponibles = data.disponibles || {};
-      const disponiblesLimpios = data.disponiblesLimpios || {};
-
-      Object.keys(disponibles).forEach(key => {
-        ingredientesDisponibles[key] = disponibles[key] !== false;
-      });
-
-      Object.keys(ingredientesDisponibles).forEach(key => {
-        ingredientesDisponiblesLimpios[limpiarIngrediente(key)] = ingredientesDisponibles[key] !== false;
-        ingredientesDisponiblesLimpios[normalizarTextoIngrediente(key)] = ingredientesDisponibles[key] !== false;
-      });
-
-      Object.keys(disponiblesLimpios).forEach(key => {
-        ingredientesDisponiblesLimpios[limpiarIngrediente(key)] = disponiblesLimpios[key] !== false;
-        ingredientesDisponiblesLimpios[normalizarTextoIngrediente(key)] = disponiblesLimpios[key] !== false;
-      });
-    }
-
-    async function cargarIngredientesUnaVez() {
-      ingredientesDisponibles = estadoInicialIngredientes();
-      ingredientesDisponiblesLimpios = {};
-
-      if (!window.db || !window.doc || !window.getDoc) return;
-
-      try {
-        const ref = window.doc(window.db, "config", "ingredientes");
-        const snap = await window.getDoc(ref);
-
-        if (snap.exists()) {
-          aplicarDisponibilidadIngredientes(snap.data());
-          refrescarSelectsIngredientesAbiertos();
-        } else {
-          aplicarDisponibilidadIngredientes({});
-        }
-      } catch (error) {
-        console.error("No se pudo cargar disponibilidad de ingredientes:", error);
-      }
-    }
-
-    function iniciarEscuchaIngredientes() {
-      ingredientesDisponibles = estadoInicialIngredientes();
-
-      if (!window.db || !window.doc || !window.onSnapshot) {
-        return;
-      }
-
-      try {
-        const ref = window.doc(window.db, "config", "ingredientes");
-
-        unsubscribeIngredientes = window.onSnapshot(
-          ref,
-          (snap) => {
-            if (snap.exists()) {
-              aplicarDisponibilidadIngredientes(snap.data());
-            } else {
-              aplicarDisponibilidadIngredientes({});
-            }
-
-            refrescarSelectsIngredientesAbiertos();
-          },
-          (error) => {
-            console.error("No se pudo escuchar disponibilidad de ingredientes:", error);
-          }
-        );
-      } catch (error) {
-        console.error("No se pudo iniciar ingredientes:", error);
-      }
-    }
-
-    function refrescarSelectsIngredientesAbiertos() {
-      document.querySelectorAll("select[id^='ing']").forEach(select => {
-        const match = select.id.match(/^ing\d+-(.+)-(\d+)$/);
-        if (!match) return;
-
-        const id = match[1];
-        const rollIndex = Number(match[2]);
-
-        if (id && !Number.isNaN(rollIndex)) {
-          actualizarIngredientes(id, rollIndex);
-        }
-      });
-    }
-
 
     const envolturas = [
       { id: "nori", nombre: "Nori", precio: 3500 },
@@ -1364,13 +1221,7 @@
         return true;
       });
 
-      return `<option value="">Seleccionar ingrediente</option>` + disponibles.map(ing => {
-        const agotado = !ingredienteDisponible(ing);
-        const seleccionado = ing === valorActual ? "selected" : "";
-        const disabled = agotado ? "disabled" : "";
-
-        return `<option value="${ing}" ${seleccionado} ${disabled}>${etiquetaIngrediente(ing)}</option>`;
-      }).join("");
+      return `<option value="">Seleccionar ingrediente</option>` + disponibles.map(ing => `<option value="${ing}" ${ing === valorActual ? "selected" : ""}>${ing}</option>`).join("");
     }
 
     function togglePromos() {
@@ -1480,7 +1331,6 @@
             <div class="small">El cuarto ingrediente suma ${formatCLP(EXTRA_INGREDIENTE)} en este roll.</div>
           </div>
 
-          <div class="agotado-info">Los ingredientes marcados con ❌ están agotados y no se pueden seleccionar.</div>
           <button class="extra-btn" id="extraBtn-${id}-${rollIndex}" onclick="mostrarIngredienteExtra('${id}', ${rollIndex})">+ Agregar ingrediente 4</button>
         </div>
       `;
@@ -1575,14 +1425,6 @@
 
         if (extraVisible && !ing4) {
           alert(`Debes elegir el ingrediente 4 de: ${rolls[i]} o cerrar esa opción.`);
-          return null;
-        }
-
-        const ingredientesSeleccionados = [ing1, ing2, ing3, ing4].filter(Boolean);
-        const agotadoElegido = ingredientesSeleccionados.find(ing => !ingredienteDisponible(ing));
-
-        if (agotadoElegido) {
-          alert(`${limpiarIngrediente(agotadoElegido)} está agotado por el momento. Elige otro ingrediente.`);
           return null;
         }
 
@@ -2492,8 +2334,6 @@ window.location.href =
       }
     });
 
-    cargarIngredientesUnaVez();
-    iniciarEscuchaIngredientes();
     renderMenu();
     mostrarSugerenciaUltimoPedido();
   </script>
