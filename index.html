@@ -1098,17 +1098,30 @@
         lista = [...disponibles];
       }
 
-      // Mostrar todos los ingredientes de la lista.
-      // Los no disponibles aparecerán con ❌ y bloqueados.
-      ingredientes = [...lista];
-      ingredientesDisponibles = [...disponibles];
+      ingredientes = disponibles;
+      ingredientesDisponibles = [...ingredientes];
       ingredientesCargados = true;
 
       refrescarSelectsIngredientesAbiertos();
     }
 
+async function esperarFirebase() {
+  for (let i = 0; i < 50; i++) {
+    if (window.db && window.doc && window.getDoc && window.onSnapshot) {
+      return true;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  return false;
+}
+
 async function cargarIngredientesDesdeFirebase() {
-  if (!window.db || !window.doc || !window.getDoc) {
+  const listo = await esperarFirebase();
+
+  if (!listo) {
+    console.error("Firebase no cargó a tiempo.");
     ingredientes = [];
     ingredientesDisponibles = [];
     ingredientesCargados = true;
@@ -1153,13 +1166,6 @@ async function cargarIngredientesDesdeFirebase() {
     function ingredienteDisponible(ing) {
       return ingredientesDisponibles.includes(ing);
     }
-
-    function etiquetaIngrediente(ing) {
-      return ingredienteDisponible(ing)
-        ? ing
-        : `❌ ${limpiarIngrediente(ing)} (agotado)`;
-    }
-
 
     function refrescarSelectsIngredientesAbiertos() {
       document.querySelectorAll("select[id^='ing']").forEach(select => {
@@ -1291,11 +1297,11 @@ async function cargarIngredientesDesdeFirebase() {
     }
 
     function etiquetaIngrediente(ing) {
-  return ingredienteDisponible(ing)
-    ? ing
-    : `❌ ${limpiarIngrediente(ing)} (agotado)`;
-}
-    
+      return ingredienteDisponible(ing)
+        ? ing
+        : `❌ ${limpiarIngrediente(ing)} (agotado)`;
+    }
+
     function crearOpciones(valorActual = "", seleccionados = [], aplicarReglaPolloCamaron = true) {
       if (!ingredientesCargados) {
         return `<option value="">Cargando ingredientes...</option>`;
@@ -1313,10 +1319,7 @@ async function cargarIngredientesDesdeFirebase() {
         const limpio = limpiarIngrediente(ing);
         const agotado = !ingredienteDisponible(ing);
 
-        // Mantiene visible el valor actual para no perderlo si el stock cambia.
         if (ing === valorActual) return true;
-
-        // Los agotados aparecen, pero bloqueados.
         if (agotado) return true;
 
         if (seleccionados.includes(ing)) return false;
@@ -1335,7 +1338,6 @@ async function cargarIngredientesDesdeFirebase() {
         })
         .join("");
     }
-
 
     function togglePromos() {
       const section = document.getElementById("promoSection");
