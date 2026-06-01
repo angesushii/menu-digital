@@ -1105,27 +1105,32 @@
       refrescarSelectsIngredientesAbiertos();
     }
 
-    async function cargarIngredientesDesdeFirebase() {
-      if (!window.db || !window.doc || !window.getDoc) return;
+async function cargarIngredientesDesdeFirebase() {
+  if (!window.db || !window.doc || !window.getDoc) {
+    ingredientes = [];
+    ingredientesDisponibles = [];
+    ingredientesCargados = true;
+    return;
+  }
 
-      try {
-        const ref = window.doc(window.db, "config", "ingredientes");
-        const snap = await window.getDoc(ref);
+  try {
+    const ref = window.doc(window.db, "config", "ingredientes");
+    const snap = await window.getDoc(ref);
 
-        if (snap.exists()) {
-          aplicarStockIngredientes(snap.data());
-        } else {
-          ingredientes = [];
-          ingredientesDisponibles = [];
-          ingredientesCargados = true;
-        }
-      } catch (error) {
-        console.error("No se pudo cargar ingredientes:", error);
-        ingredientes = [];
-        ingredientesDisponibles = [];
-        ingredientesCargados = true;
-      }
+    if (snap.exists()) {
+      aplicarStockIngredientes(snap.data());
+    } else {
+      ingredientes = [];
+      ingredientesDisponibles = [];
+      ingredientesCargados = true;
     }
+  } catch (error) {
+    console.error("No se pudo cargar ingredientes:", error);
+    ingredientes = [];
+    ingredientesDisponibles = [];
+    ingredientesCargados = true;
+  }
+}
 
     function iniciarEscuchaIngredientes() {
       if (!window.db || !window.doc || !window.onSnapshot) return;
@@ -2421,14 +2426,14 @@ window.location.href =
       }
     });
 
-    async function iniciarCarta() {
-      await cargarIngredientesDesdeFirebase();
-      iniciarEscuchaIngredientes();
-      renderMenu();
-      mostrarSugerenciaUltimoPedido();
-    }
+async function iniciarCarta() {
+  await cargarIngredientesDesdeFirebase();
+  iniciarEscuchaIngredientes();
+  renderMenu();
+  mostrarSugerenciaUltimoPedido();
+}
 
-    iniciarCarta();
+iniciarCarta();
   </script>
 </body>
 </html>
