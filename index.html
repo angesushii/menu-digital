@@ -1248,6 +1248,44 @@ async function cargarIngredientesDesdeFirebase() {
       card.classList.add("active");
     }
 
+
+    function buscarIngredientesNoDisponiblesEnCarrito(items) {
+      const faltantes = [];
+
+      (items || []).forEach((item, itemIndex) => {
+        (item.detalleRolls || []).forEach((roll, rollIndex) => {
+          (roll.ingredientes || []).forEach((ing, ingIndex) => {
+            if (ing && !ingredienteDisponible(ing)) {
+              faltantes.push({
+                itemIndex,
+                rollIndex,
+                ingIndex,
+                ingrediente: ing,
+                ingredienteLimpio: limpiarIngrediente(ing),
+                producto: item.nombre || "Producto",
+                roll: roll.nombre || `Roll ${rollIndex + 1}`
+              });
+            }
+          });
+        });
+      });
+
+      return faltantes;
+    }
+
+    function resumenIngredientesNoDisponibles(faltantes) {
+      const nombres = [...new Set((faltantes || []).map(f => f.ingredienteLimpio))];
+
+      if (!nombres.length) return "";
+
+      if (nombres.length === 1) {
+        return `${nombres[0]} no está disponible por el momento. Puedes editar ese ingrediente antes de finalizar.`;
+      }
+
+      return `${nombres.join(", ")} no están disponibles por el momento. Puedes editar esos ingredientes antes de finalizar.`;
+    }
+
+
     function repetirUltimoPedido() {
       const ultimo = obtenerUltimoPedidoLocal();
 
@@ -1256,7 +1294,10 @@ async function cargarIngredientesDesdeFirebase() {
         return;
       }
 
-      carrito = JSON.parse(JSON.stringify(ultimo.carrito));
+      const pedidoAnterior = JSON.parse(JSON.stringify(ultimo.carrito));
+      const faltantes = buscarIngredientesNoDisponiblesEnCarrito(pedidoAnterior);
+
+      carrito = pedidoAnterior;
 
       if (ultimo.cliente && ultimo.cliente !== "No indicado") {
         document.getElementById("cliente").value = ultimo.cliente;
@@ -1268,6 +1309,23 @@ async function cargarIngredientesDesdeFirebase() {
 
       renderCarrito();
       ocultarSugerenciaPedido();
+
+      if (faltantes.length) {
+        const primero = faltantes[0];
+
+        alert(
+          "Tu pedido anterior tiene ingredientes agotados:\n\n" +
+          resumenIngredientesNoDisponibles(faltantes) +
+          "\n\nTe llevaremos a editar el primer producto afectado."
+        );
+
+        setTimeout(() => {
+          editarItem(primero.itemIndex);
+        }, 150);
+
+        return;
+      }
+
       document.querySelector(".cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -1798,7 +1856,7 @@ async function cargarIngredientesDesdeFirebase() {
                 </div>
               </div>
               <div style="margin-top:8px;">
-                ${item.detalleRolls.map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(limpiarIngrediente).join(", ")}`).join("<br>")}
+                ${item.detalleRolls.map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(ing => ingredienteDisponible(ing) ? limpiarIngrediente(ing) : `❌ ${limpiarIngrediente(ing)} (agotado)`).join(", ")}`).join("<br>")}
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 
