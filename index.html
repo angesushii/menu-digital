@@ -2015,7 +2015,7 @@ async function cargarIngredientesDesdeFirebase() {
         (item.categoria === "handroll" || item.categoria === "sushiburger");
     }
 
-    function actualizarCantidadItem(index, cambio) {
+    async function actualizarCantidadItem(index, cambio) {
       const item = carrito[index];
       if (!item || !puedeCambiarCantidad(item)) return;
 
@@ -2024,6 +2024,11 @@ async function cargarIngredientesDesdeFirebase() {
       item.precioFinal = precioUnitarioItem(item) * nuevaCantidad;
 
       renderCarrito();
+
+      const panel = document.getElementById("finalPanel");
+      if (panel && panel.classList.contains("active")) {
+        await generarOpcionesHorario();
+      }
     }
 
 
