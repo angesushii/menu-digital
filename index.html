@@ -1819,9 +1819,11 @@ async function cargarIngredientesDesdeFirebase() {
           extraCuarto += EXTRA_INGREDIENTE;
         }
 
-        if (esPolloCamaron(ingredientesRoll)) {
-          extraPolloCamaron += EXTRA_POLLO_CAMARON;
-        }
+const primerosTres = [ing1, ing2, ing3];
+
+if (esPolloCamaron(primerosTres)) {
+  extraPolloCamaron += EXTRA_POLLO_CAMARON;
+}
 
         if (ingredientesRoll.some(ing => limpiarIngrediente(ing) === "Salmón")) {
           extraSalmon += 1300;
