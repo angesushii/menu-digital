@@ -2020,40 +2020,38 @@ if (esPolloCamaron(primerosTres)) {
         item.categoria === "sushiburger";
     }
 
-    function recalcularPrecioItem(item) {
-      if (!item) return;
-
-      item.precioFinal = precioUnitarioItem(item) * Number(item.cantidad || 1);
-      item.descuentoPromoA = 0;
-      item.promoAAplicada = false;
-      item.detallePromoA = "";
-    }
-
     function recalcularPreciosCarrito() {
-      recalcularPreciosCarrito();
+      carrito.forEach(item => {
+        if (!item) return;
+
+        const cantidad = Number(item.cantidad || 1);
+        item.precioFinal = Number(item.precioUnitario || item.precioFinal || 0) * cantidad;
+        item.descuentoPromoA = 0;
+        item.promoAAplicada = false;
+        item.detallePromoA = "";
+      });
 
       const burgers = carrito
-        .map((item, index) => ({ item, index }))
-        .filter(({ item }) => esSushiBurgerPersonalizado(item));
+        .filter(esSushiBurgerPersonalizado);
 
-      const totalBurgers = burgers.reduce((acc, { item }) => acc + cantidadItem(item), 0);
+      const totalBurgers = burgers.reduce((acc, item) => acc + Number(item.cantidad || 1), 0);
       const paresPromo = Math.floor(totalBurgers / 2);
-      let descuentoPendiente = paresPromo * 2000;
+      let descuentosPorAplicar = paresPromo;
 
-      if (descuentoPendiente <= 0) return;
+      if (descuentosPorAplicar <= 0) return;
 
-      let contadorBurgers = 0;
+      let contador = 0;
 
-      burgers.forEach(({ item }) => {
-        const cantidad = cantidadItem(item);
+      burgers.forEach(item => {
+        const cantidad = Number(item.cantidad || 1);
         let descuentoItem = 0;
 
         for (let i = 0; i < cantidad; i++) {
-          contadorBurgers++;
+          contador++;
 
-          if (contadorBurgers % 2 === 0 && descuentoPendiente > 0) {
+          if (contador % 2 === 0 && descuentosPorAplicar > 0) {
             descuentoItem += 2000;
-            descuentoPendiente -= 2000;
+            descuentosPorAplicar--;
           }
         }
 
@@ -2065,6 +2063,7 @@ if (esPolloCamaron(primerosTres)) {
         }
       });
     }
+
 
     function puedeCambiarCantidad(item) {
       return item &&
@@ -2078,7 +2077,6 @@ if (esPolloCamaron(primerosTres)) {
 
       const nuevaCantidad = Math.max(1, cantidadItem(item) + cambio);
       item.cantidad = nuevaCantidad;
-      recalcularPreciosCarrito();
 
       renderCarrito();
       await actualizarHorarioSiFinalAbierto();
@@ -2166,7 +2164,7 @@ if (esPolloCamaron(primerosTres)) {
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 ${item.extraPolloCamaron ? `<br>Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}` : ""}
-                ${item.promoAAplicada ? `<br>🎉 Descuento Promo A: -${formatCLP(item.descuentoPromoA)}<br>${item.detallePromoA || ""}` : ""}
+                
               </div>
             </div>
           `).join("")}
@@ -2786,8 +2784,6 @@ function cerrarConfirmacion() {
     });
 
     async function guardarPedidoFirebase(cliente, total, telefonoCliente) {
-      recalcularPreciosCarrito();
-
       if (!window.db || !window.addDoc || !window.collection) return false;
 
       const datosFinales = getDatosFinales();
