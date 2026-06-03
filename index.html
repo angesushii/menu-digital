@@ -1093,6 +1093,18 @@
     let minutoManualSeleccionado = "";
     let intervaloHorarioActual = null;
 
+    async function esperarFirebase() {
+      for (let i = 0; i < 50; i++) {
+        if (window.db && window.doc && window.getDoc && window.onSnapshot) {
+          return true;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      return false;
+    }
+
     const HORARIO_CONFIG_DEFAULT = {
       activo: true,
       apertura: "12:00",
@@ -1197,32 +1209,35 @@
       refrescarSelectsIngredientesAbiertos();
     }
 
-async function cargarIngredientesDesdeFirebase() {
-  if (!window.db || !window.doc || !window.getDoc) {
-    ingredientes = [];
-    ingredientesDisponibles = [];
-    ingredientesCargados = true;
-    return;
-  }
+    async function cargarIngredientesDesdeFirebase() {
+      const listo = await esperarFirebase();
 
-  try {
-    const ref = window.doc(window.db, "config", "ingredientes");
-    const snap = await window.getDoc(ref);
+      if (!listo) {
+        console.error("Firebase no cargó a tiempo.");
+        ingredientes = [];
+        ingredientesDisponibles = [];
+        ingredientesCargados = true;
+        return;
+      }
 
-    if (snap.exists()) {
-      aplicarStockIngredientes(snap.data());
-    } else {
-      ingredientes = [];
-      ingredientesDisponibles = [];
-      ingredientesCargados = true;
+      try {
+        const ref = window.doc(window.db, "config", "ingredientes");
+        const snap = await window.getDoc(ref);
+
+        if (snap.exists()) {
+          aplicarStockIngredientes(snap.data());
+        } else {
+          ingredientes = [];
+          ingredientesDisponibles = [];
+          ingredientesCargados = true;
+        }
+      } catch (error) {
+        console.error("No se pudo cargar ingredientes:", error);
+        ingredientes = [];
+        ingredientesDisponibles = [];
+        ingredientesCargados = true;
+      }
     }
-  } catch (error) {
-    console.error("No se pudo cargar ingredientes:", error);
-    ingredientes = [];
-    ingredientesDisponibles = [];
-    ingredientesCargados = true;
-  }
-}
 
     function iniciarEscuchaIngredientes() {
       if (!window.db || !window.doc || !window.onSnapshot) return;
