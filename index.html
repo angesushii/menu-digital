@@ -1486,6 +1486,7 @@ async function cargarIngredientesDesdeFirebase() {
       }
 
       renderCarrito();
+      actualizarHorarioSiFinalAbierto();
       ocultarSugerenciaPedido();
 
       if (faltantes.length) {
@@ -1832,7 +1833,7 @@ async function cargarIngredientesDesdeFirebase() {
       return { detalleRolls, extraSalmon, extraCuarto, extraPolloCamaron };
     }
 
-    function guardarPromo(id) {
+    async function guardarPromo(id) {
       const promo = itemActivo;
       const datos = recolectarRolls(id, promo.rolls);
       if (!datos) return;
@@ -1861,6 +1862,7 @@ async function cargarIngredientesDesdeFirebase() {
       }
 
       renderCarrito();
+      await actualizarHorarioSiFinalAbierto();
       volverCarta();
       document.querySelector(".cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -1943,7 +1945,7 @@ async function cargarIngredientesDesdeFirebase() {
       }
     }
 
-    function guardarPersonalizado(formId) {
+    async function guardarPersonalizado(formId) {
       const datos = recolectarRolls(formId, [builderEnvoltura.nombre]);
       if (!datos) return;
       const obs = "";
@@ -1990,6 +1992,7 @@ async function cargarIngredientesDesdeFirebase() {
 
       limpiarBuilder();
       renderCarrito();
+      await actualizarHorarioSiFinalAbierto();
       document.querySelector(".cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -2024,17 +2027,21 @@ async function cargarIngredientesDesdeFirebase() {
       item.precioFinal = precioUnitarioItem(item) * nuevaCantidad;
 
       renderCarrito();
+      await actualizarHorarioSiFinalAbierto();
+    }
 
+
+    async function actualizarHorarioSiFinalAbierto() {
       const panel = document.getElementById("finalPanel");
       if (panel && panel.classList.contains("active")) {
         await generarOpcionesHorario();
       }
     }
 
-
-    function eliminarItem(index) {
+    async function eliminarItem(index) {
       carrito.splice(index, 1);
       renderCarrito();
+      await actualizarHorarioSiFinalAbierto();
     }
 
     function editarItem(index) {
