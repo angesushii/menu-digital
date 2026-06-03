@@ -2123,16 +2123,18 @@ if (descuentoItem > 0) {
 
     function renderCarrito() {
       const cart = document.getElementById("cartList");
+
       recalcularPreciosCarrito();
-const subtotal = carrito.reduce(
-  (acc, item) => acc + Number(item.precioFinal || 0),
-  0
-);
 
-const descuentoPromoA = calcularDescuentoPromoA();
-const total = subtotal - descuentoPromoA;
+      const subtotal = carrito.reduce(
+        (acc, item) => acc + Number(item.precioFinal || 0),
+        0
+      );
 
-document.getElementById("total").textContent = formatCLP(total);
+      const descuentoPromoA = calcularDescuentoPromoA();
+      const total = subtotal - descuentoPromoA;
+
+      document.getElementById("total").textContent = formatCLP(total);
 
       if (carrito.length === 0) {
         cart.innerHTML = '<div class="cart-empty">Aún no has agregado productos.</div>';
@@ -2141,26 +2143,24 @@ document.getElementById("total").textContent = formatCLP(total);
 
       const grupos = agruparCarrito();
 
-const descuentoPromoA = calcularDescuentoPromoA();
+      cart.innerHTML = `
+        ${renderGrupoCarrito("Pedido personalizado", grupos.personalizados)}
+        ${renderGrupoCarrito("Promociones", grupos.promos)}
 
-cart.innerHTML = `
-  ${renderGrupoCarrito("Pedido personalizado", grupos.personalizados)}
-  ${renderGrupoCarrito("Promociones", grupos.promos)}
-
-  ${descuentoPromoA > 0 ? `
-    <div style="
-      margin-top:12px;
-      padding:12px;
-      border-radius:12px;
-      background:#fff8e8;
-      border:1px solid #f0d28a;
-      font-weight:900;
-      color:#7a5300;
-    ">
-      🎉 Promo A aplicada: -${formatCLP(descuentoPromoA)}
-    </div>
-  ` : ""}
-`;
+        ${descuentoPromoA > 0 ? `
+          <div style="
+            margin-top:12px;
+            padding:12px;
+            border-radius:12px;
+            background:#fff8e8;
+            border:1px solid #f0d28a;
+            font-weight:900;
+            color:#7a5300;
+          ">
+            🎉 Promo A aplicada: -${formatCLP(descuentoPromoA)}
+          </div>
+        ` : ""}
+      `;
     }
 
     function renderGrupoCarrito(titulo, items) {
