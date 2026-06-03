@@ -460,6 +460,87 @@
       .ingredientes-grid { grid-template-columns: 1fr; }
     }
 
+
+    .horario-admin-card {
+      background: rgba(255,255,255,.96);
+      border-radius: var(--radio);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--sombra);
+      border: 1px solid rgba(0,0,0,.05);
+    }
+
+    .horario-admin-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .horario-admin-head h2 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .horario-toggle-btn {
+      background: #111;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .horario-panel {
+      display: none;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .horario-panel.active {
+      display: block;
+    }
+
+    .horario-config-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .horario-switch-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f8f8f8;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 10px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    .horario-switch-row input {
+      width: auto;
+      transform: scale(1.2);
+    }
+
+    .horario-save-btn {
+      width: 100%;
+      margin-top: 14px;
+      background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro));
+      color: white;
+    }
+
+    .horario-status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+      font-weight: 700;
+    }
+
+    @media (max-width: 760px) {
+      .horario-config-grid { grid-template-columns: 1fr; }
+    }
+
     .hidden { display: none; }
 
     @media (max-width: 760px) {
@@ -493,6 +574,70 @@
         <div id="ingredientesPanel" class="ingredientes-panel">
           <div id="ingredientesAdminGrid" class="ingredientes-grid"></div>
           <div id="ingredientesStatus" class="ingredientes-status">Cargando ingredientes...</div>
+        </div>
+      </section>
+
+
+      <section class="horario-admin-card">
+        <div class="horario-admin-head" onclick="toggleHorarioPanel()">
+          <div>
+            <h2>⏰ Horarios</h2>
+            <div class="muted">Configura retiro, apertura, cierre y tiempos de preparación.</div>
+          </div>
+          <button type="button" class="horario-toggle-btn">Ver / ocultar</button>
+        </div>
+
+        <div id="horarioPanel" class="horario-panel">
+          <label class="horario-switch-row">
+            <input type="checkbox" id="horarioActivo">
+            Recibir pedidos
+          </label>
+
+          <div class="horario-config-grid">
+            <div>
+              <label>Apertura</label>
+              <input id="horarioApertura" type="time">
+            </div>
+            <div>
+              <label>Cierre</label>
+              <input id="horarioCierre" type="time">
+            </div>
+            <div>
+              <label>Hora mínima de retiro</label>
+              <input id="horarioMinimoRetiro" type="time">
+            </div>
+            <div>
+              <label>Intervalo entre horarios (min)</label>
+              <input id="horarioIntervalo" type="number" min="5" step="5">
+            </div>
+            <div>
+              <label>Cantidad de horarios</label>
+              <input id="horarioCantidadOpciones" type="number" min="1" max="12" step="1">
+            </div>
+            <div>
+              <label>Sushi 10 piezas (min)</label>
+              <input id="tiempoSushi10" type="number" min="1" step="1">
+            </div>
+            <div>
+              <label>Hand roll (min)</label>
+              <input id="tiempoHandroll" type="number" min="1" step="1">
+            </div>
+            <div>
+              <label>Sushi burger (min)</label>
+              <input id="tiempoSushiburger" type="number" min="1" step="1">
+            </div>
+            <div>
+              <label>Acevichado 10 piezas (min)</label>
+              <input id="tiempoAcevichado" type="number" min="1" step="1">
+            </div>
+            <div>
+              <label>Mensaje cerrado</label>
+              <input id="mensajeCerrado" placeholder="No estamos recibiendo pedidos en este momento.">
+            </div>
+          </div>
+
+          <button type="button" class="horario-save-btn" onclick="guardarConfigHorario()">Guardar configuración</button>
+          <div id="horarioStatus" class="horario-status">Cargando configuración...</div>
         </div>
       </section>
 
@@ -664,6 +809,136 @@
       } catch (error) {
         console.error("No se pudo guardar el ingrediente:", error);
         alert("No se pudo guardar el cambio. Revisa las reglas de Firestore.");
+      }
+    };
+
+
+
+    const HORARIO_CONFIG_DEFAULT = {
+      activo: true,
+      apertura: "12:00",
+      cierre: "23:00",
+      minimoRetiro: "12:00",
+      intervaloMinutos: 5,
+      cantidadOpciones: 5,
+      tiempos: {
+        sushi10: 5,
+        handroll: 4,
+        sushiburger: 5,
+        acevichado: 5
+      },
+      mensajeCerrado: "No estamos recibiendo pedidos en este momento."
+    };
+
+    let horarioConfigAdmin = { ...HORARIO_CONFIG_DEFAULT, tiempos: { ...HORARIO_CONFIG_DEFAULT.tiempos } };
+
+    window.toggleHorarioPanel = function toggleHorarioPanel() {
+      const panel = document.getElementById("horarioPanel");
+      if (panel) panel.classList.toggle("active");
+    };
+
+    function normalizarHorarioConfig(data = {}) {
+      return {
+        ...HORARIO_CONFIG_DEFAULT,
+        ...data,
+        tiempos: {
+          ...HORARIO_CONFIG_DEFAULT.tiempos,
+          ...(data.tiempos || {})
+        }
+      };
+    }
+
+    function ponerValorInput(id, valor) {
+      const el = document.getElementById(id);
+      if (el) el.value = valor;
+    }
+
+    function renderHorarioAdmin() {
+      const cfg = normalizarHorarioConfig(horarioConfigAdmin);
+
+      const activo = document.getElementById("horarioActivo");
+      if (activo) activo.checked = cfg.activo !== false;
+
+      ponerValorInput("horarioApertura", cfg.apertura || "12:00");
+      ponerValorInput("horarioCierre", cfg.cierre || "23:00");
+      ponerValorInput("horarioMinimoRetiro", cfg.minimoRetiro || cfg.apertura || "12:00");
+      ponerValorInput("horarioIntervalo", Number(cfg.intervaloMinutos || 5));
+      ponerValorInput("horarioCantidadOpciones", Number(cfg.cantidadOpciones || 5));
+      ponerValorInput("tiempoSushi10", Number(cfg.tiempos?.sushi10 || 5));
+      ponerValorInput("tiempoHandroll", Number(cfg.tiempos?.handroll || 4));
+      ponerValorInput("tiempoSushiburger", Number(cfg.tiempos?.sushiburger || 5));
+      ponerValorInput("tiempoAcevichado", Number(cfg.tiempos?.acevichado || 5));
+      ponerValorInput("mensajeCerrado", cfg.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+
+      const status = document.getElementById("horarioStatus");
+      if (status) {
+        status.textContent = cfg.activo === false
+          ? "Pedidos cerrados desde la carta."
+          : `Pedidos activos · Retiro desde ${cfg.minimoRetiro || cfg.apertura} · Cierre ${cfg.cierre}`;
+      }
+    }
+
+    function leerNumeroInput(id, fallback) {
+      const el = document.getElementById(id);
+      const valor = Number(el?.value || fallback);
+      return Number.isFinite(valor) && valor > 0 ? valor : fallback;
+    }
+
+    function leerTextoInput(id, fallback) {
+      const el = document.getElementById(id);
+      return (el?.value || fallback || "").trim();
+    }
+
+    async function cargarHorarioAdmin() {
+      horarioConfigAdmin = normalizarHorarioConfig({});
+
+      try {
+        const ref = doc(db, "config", "horario");
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          horarioConfigAdmin = normalizarHorarioConfig(snap.data());
+        }
+
+        await setDoc(ref, {
+          ...horarioConfigAdmin,
+          actualizadoEn: new Date().toISOString()
+        }, { merge: true });
+      } catch (error) {
+        console.error("No se pudo cargar la configuración de horario:", error);
+      }
+
+      renderHorarioAdmin();
+    }
+
+    window.guardarConfigHorario = async function guardarConfigHorario() {
+      horarioConfigAdmin = normalizarHorarioConfig({
+        activo: document.getElementById("horarioActivo")?.checked !== false,
+        apertura: leerTextoInput("horarioApertura", "12:00"),
+        cierre: leerTextoInput("horarioCierre", "23:00"),
+        minimoRetiro: leerTextoInput("horarioMinimoRetiro", "12:00"),
+        intervaloMinutos: leerNumeroInput("horarioIntervalo", 5),
+        cantidadOpciones: leerNumeroInput("horarioCantidadOpciones", 5),
+        tiempos: {
+          sushi10: leerNumeroInput("tiempoSushi10", 5),
+          handroll: leerNumeroInput("tiempoHandroll", 4),
+          sushiburger: leerNumeroInput("tiempoSushiburger", 5),
+          acevichado: leerNumeroInput("tiempoAcevichado", 5)
+        },
+        mensajeCerrado: leerTextoInput("mensajeCerrado", "No estamos recibiendo pedidos en este momento.")
+      });
+
+      try {
+        await setDoc(doc(db, "config", "horario"), {
+          ...horarioConfigAdmin,
+          actualizadoEn: new Date().toISOString()
+        }, { merge: true });
+
+        renderHorarioAdmin();
+        alert("Configuración de horario guardada.");
+      } catch (error) {
+        console.error("No se pudo guardar la configuración de horario:", error);
+        alert("No se pudo guardar la configuración. Revisa las reglas de Firestore.");
       }
     };
 
@@ -1131,6 +1406,7 @@ if (loginBox) loginBox.classList.add("hidden");
 
 document.getElementById("panel").classList.remove("hidden");
 cargarIngredientesAdmin();
+cargarHorarioAdmin();
 cargarPedidos();
 iniciarEscuchaPedidos();
 iniciarRespaldoActualizacion();
