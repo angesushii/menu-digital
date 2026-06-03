@@ -1137,6 +1137,7 @@
     let horaManualSeleccionada = "";
     let minutoManualSeleccionado = "";
     let intervaloHorarioActual = null;
+    let intervaloConfigHorario = null;
 
     const HORARIO_CONFIG_DEFAULT = {
       activo: true,
@@ -1209,7 +1210,20 @@
       }
     }
 
+    function iniciarActualizacionHorarioCada5Segundos() {
+      if (intervaloConfigHorario) {
+        clearInterval(intervaloConfigHorario);
+      }
 
+      intervaloConfigHorario = setInterval(async () => {
+        await cargarHorarioDesdeFirebase();
+
+        const panel = document.getElementById("finalPanel");
+        if (panel && panel.classList.contains("active")) {
+          generarOpcionesHorario();
+        }
+      }, 5000);
+    }
 
     let ingredientes = [];
     let ingredientesDisponibles = [];
@@ -2831,6 +2845,7 @@ async function iniciarCarta() {
   await cargarHorarioDesdeFirebase();
   iniciarEscuchaIngredientes();
   iniciarEscuchaHorario();
+  iniciarActualizacionHorarioCada5Segundos();
   renderMenu();
   mostrarSugerenciaUltimoPedido();
 }
