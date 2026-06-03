@@ -2347,6 +2347,20 @@ function cerrarConfirmacion() {
 
       if (!loading || !cont || !nota) return;
 
+      // Guarda la opción que el cliente ya tenía marcada antes de actualizar.
+      const radioActual = document.querySelector('input[name="horarioRetiro"]:checked');
+      const opcionActual = radioActual && opcionesHorarioActuales[Number(radioActual.value)]
+        ? opcionesHorarioActuales[Number(radioActual.value)]
+        : null;
+
+      if (opcionActual && opcionActual.tipo === "manual") {
+        actualizarHoraManual();
+      }
+
+      const tipoAnterior = opcionActual?.tipo || null;
+      const horaAnterior = opcionActual?.hora || "";
+      const eraManual = tipoAnterior === "manual";
+
       loading.style.display = "block";
       cont.innerHTML = "";
       nota.textContent = "";
@@ -2420,8 +2434,6 @@ function cerrarConfirmacion() {
       }
 
       opcionesHorarioActuales = [];
-      horaManualSeleccionada = "";
-      minutoManualSeleccionado = "";
 
       const intervalo = Math.max(5, Number(cfg.intervaloMinutos || 5));
       const cantidadOpciones = Math.max(1, Number(cfg.cantidadOpciones || 5));
@@ -2451,19 +2463,35 @@ function cerrarConfirmacion() {
 
       opcionesHorarioActuales.push({
         tipo: "manual",
-        label: "Elegir otra hora",
-        hora: "",
-        fechaHoraISO: null,
+        label: eraManual && horaAnterior ? `Hora elegida: ${horaAnterior}` : "Elegir otra hora",
+        hora: eraManual ? horaAnterior : "",
+        fechaHoraISO: eraManual && horaAnterior ? fechaHoraChileDesdeHHMM(horaAnterior).toISOString() : null,
         tiempoPreparacion: tiempoPedido,
         tiempoCola: cola
       });
 
-      cont.innerHTML = opcionesHorarioActuales.map((op, i) => `
-        <label class="horario-option">
-          <input type="radio" name="horarioRetiro" value="${i}" ${i === 0 ? "checked" : ""} onchange="toggleHoraManual()">
-          ${op.label}
-        </label>
-      `).join("");
+      cont.innerHTML = opcionesHorarioActuales.map((op, i) => {
+        let checked = false;
+
+        if (eraManual && op.tipo === "manual") {
+          checked = true;
+        } else if (!eraManual && horaAnterior && op.hora === horaAnterior && op.tipo === tipoAnterior) {
+          checked = true;
+        }
+
+        return `
+          <label class="horario-option">
+            <input type="radio" name="horarioRetiro" value="${i}" ${checked ? "checked" : ""} onchange="toggleHoraManual()">
+            ${op.label}
+          </label>
+        `;
+      }).join("");
+
+      // Si la hora anterior ya no existe, vuelve a marcar la primera opción.
+      if (!document.querySelector('input[name="horarioRetiro"]:checked')) {
+        const primero = document.querySelector('input[name="horarioRetiro"]');
+        if (primero) primero.checked = true;
+      }
 
       toggleHoraManual();
 
