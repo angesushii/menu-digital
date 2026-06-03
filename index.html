@@ -2055,14 +2055,20 @@ if (esPolloCamaron(primerosTres)) {
           }
         }
 
-        if (descuentoItem > 0) {
-          item.descuentoPromoA = descuentoItem;
-          item.promoAAplicada = true;
-          item.detallePromoA = `Promo A aplicada por ${paresPromo} par(es) de Sushi Burger`;
-          item.precioFinal = Math.max(0, Number(item.precioFinal || 0) - descuentoItem);
-        }
+if (descuentoItem > 0) {
+  item.descuentoPromoA = descuentoItem;
+  item.promoAAplicada = true;
+  item.detallePromoA = `Promo A aplicada por ${paresPromo} par(es) de Sushi Burger`;
+}
       });
-    }
+      }
+
+    function calcularDescuentoPromoA() {
+  return carrito.reduce(
+    (acc, item) => acc + Number(item.descuentoPromoA || 0),
+    0
+  );
+}
 
 
     function puedeCambiarCantidad(item) {
@@ -2118,8 +2124,15 @@ if (esPolloCamaron(primerosTres)) {
     function renderCarrito() {
       const cart = document.getElementById("cartList");
       recalcularPreciosCarrito();
-      const total = carrito.reduce((acc, item) => acc + Number(item.precioFinal || 0), 0);
-      document.getElementById("total").textContent = formatCLP(total);
+const subtotal = carrito.reduce(
+  (acc, item) => acc + Number(item.precioFinal || 0),
+  0
+);
+
+const descuentoPromoA = calcularDescuentoPromoA();
+const total = subtotal - descuentoPromoA;
+
+document.getElementById("total").textContent = formatCLP(total);
 
       if (carrito.length === 0) {
         cart.innerHTML = '<div class="cart-empty">Aún no has agregado productos.</div>';
@@ -2128,10 +2141,26 @@ if (esPolloCamaron(primerosTres)) {
 
       const grupos = agruparCarrito();
 
-      cart.innerHTML = `
-        ${renderGrupoCarrito("Pedido personalizado", grupos.personalizados)}
-        ${renderGrupoCarrito("Promociones", grupos.promos)}
-      `;
+const descuentoPromoA = calcularDescuentoPromoA();
+
+cart.innerHTML = `
+  ${renderGrupoCarrito("Pedido personalizado", grupos.personalizados)}
+  ${renderGrupoCarrito("Promociones", grupos.promos)}
+
+  ${descuentoPromoA > 0 ? `
+    <div style="
+      margin-top:12px;
+      padding:12px;
+      border-radius:12px;
+      background:#fff8e8;
+      border:1px solid #f0d28a;
+      font-weight:900;
+      color:#7a5300;
+    ">
+      🎉 Promo A aplicada: -${formatCLP(descuentoPromoA)}
+    </div>
+  ` : ""}
+`;
     }
 
     function renderGrupoCarrito(titulo, items) {
@@ -2836,7 +2865,15 @@ botonConfirmar.style.cursor = "not-allowed";
       const cliente = obtenerNombreCliente();
       const telefonoCliente = obtenerTelefonoCliente();
       recalcularPreciosCarrito();
-      const total = carrito.reduce((acc, item) => acc + Number(item.precioFinal || 0), 0);
+      
+const subtotal = carrito.reduce(
+  (acc, item) => acc + Number(item.precioFinal || 0),
+  0
+);
+
+const descuentoPromoA = calcularDescuentoPromoA();
+const total = subtotal - descuentoPromoA;
+      
       const datosFinales = getDatosFinales();
 
       if (horarioConfig?.activo === false) {
@@ -2928,6 +2965,10 @@ let mensaje =
         mensaje += `%0A`;
       });
 
+      if (descuentoPromoA > 0) {
+  mensaje += `🎉 Promo A aplicada: -${formatCLP(descuentoPromoA)}%0A`;
+}
+      
       mensaje += `*Total: ${formatCLP(total)}*%0A%0A`;
       mensaje += `Nombre: ${cliente}%0A`;
       mensaje += `WhatsApp cliente: ${telefonoWhatsAppChile(telefonoCliente)}%0A`;
