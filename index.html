@@ -2014,31 +2014,57 @@ if (esPolloCamaron(primerosTres)) {
       return Number(item.precioUnitario || item.precioFinal || 0);
     }
 
+    function esSushiBurgerPersonalizado(item) {
+      return item &&
+        item.tipo === "personalizado" &&
+        item.categoria === "sushiburger";
+    }
+
     function recalcularPrecioItem(item) {
       if (!item) return;
 
-      if (item.tipo === "personalizado" && item.categoria === "sushiburger") {
-        const cantidad = Number(item.cantidad || 1);
-        const unitario = Number(item.precioUnitario || 0);
-
-        const extras = Math.max(0, unitario - 6000);
-
-        const paresPromo = Math.floor(cantidad / 2);
-        const sobrantes = cantidad % 2;
-
-        const totalBase = (paresPromo * 10000) + (sobrantes * 6000);
-        const totalExtras = extras * cantidad;
-
-        item.descuentoPromoA = (unitario * cantidad) - (totalBase + totalExtras);
-        item.promoAAplicada = paresPromo > 0;
-        item.detallePromoA = paresPromo > 0 ? `${paresPromo} Promo A aplicada` : "";
-        item.precioFinal = totalBase + totalExtras;
-        return;
-      }
-
       item.precioFinal = precioUnitarioItem(item) * Number(item.cantidad || 1);
+      item.descuentoPromoA = 0;
+      item.promoAAplicada = false;
+      item.detallePromoA = "";
     }
 
+    function recalcularPreciosCarrito() {
+      recalcularPreciosCarrito();
+
+      const burgers = carrito
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => esSushiBurgerPersonalizado(item));
+
+      const totalBurgers = burgers.reduce((acc, { item }) => acc + cantidadItem(item), 0);
+      const paresPromo = Math.floor(totalBurgers / 2);
+      let descuentoPendiente = paresPromo * 2000;
+
+      if (descuentoPendiente <= 0) return;
+
+      let contadorBurgers = 0;
+
+      burgers.forEach(({ item }) => {
+        const cantidad = cantidadItem(item);
+        let descuentoItem = 0;
+
+        for (let i = 0; i < cantidad; i++) {
+          contadorBurgers++;
+
+          if (contadorBurgers % 2 === 0 && descuentoPendiente > 0) {
+            descuentoItem += 2000;
+            descuentoPendiente -= 2000;
+          }
+        }
+
+        if (descuentoItem > 0) {
+          item.descuentoPromoA = descuentoItem;
+          item.promoAAplicada = true;
+          item.detallePromoA = `Promo A aplicada por ${paresPromo} par(es) de Sushi Burger`;
+          item.precioFinal = Math.max(0, Number(item.precioFinal || 0) - descuentoItem);
+        }
+      });
+    }
 
     function puedeCambiarCantidad(item) {
       return item &&
@@ -2052,7 +2078,7 @@ if (esPolloCamaron(primerosTres)) {
 
       const nuevaCantidad = Math.max(1, cantidadItem(item) + cambio);
       item.cantidad = nuevaCantidad;
-      recalcularPrecioItem(item);
+      recalcularPreciosCarrito();
 
       renderCarrito();
       await actualizarHorarioSiFinalAbierto();
@@ -2093,7 +2119,7 @@ if (esPolloCamaron(primerosTres)) {
 
     function renderCarrito() {
       const cart = document.getElementById("cartList");
-      carrito.forEach(recalcularPrecioItem);
+      recalcularPreciosCarrito();
       const total = carrito.reduce((acc, item) => acc + Number(item.precioFinal || 0), 0);
       document.getElementById("total").textContent = formatCLP(total);
 
@@ -2140,7 +2166,7 @@ if (esPolloCamaron(primerosTres)) {
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 ${item.extraPolloCamaron ? `<br>Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}` : ""}
-                ${item.promoAAplicada ? `<br>🎉 Descuento Promo A: -${formatCLP(item.descuentoPromoA)}` : ""}
+                ${item.promoAAplicada ? `<br>🎉 Descuento Promo A: -${formatCLP(item.descuentoPromoA)}<br>${item.detallePromoA || ""}` : ""}
               </div>
             </div>
           `).join("")}
@@ -2760,6 +2786,8 @@ function cerrarConfirmacion() {
     });
 
     async function guardarPedidoFirebase(cliente, total, telefonoCliente) {
+      recalcularPreciosCarrito();
+
       if (!window.db || !window.addDoc || !window.collection) return false;
 
       const datosFinales = getDatosFinales();
@@ -2811,6 +2839,7 @@ botonConfirmar.style.cursor = "not-allowed";
 
       const cliente = obtenerNombreCliente();
       const telefonoCliente = obtenerTelefonoCliente();
+      recalcularPreciosCarrito();
       const total = carrito.reduce((acc, item) => acc + Number(item.precioFinal || 0), 0);
       const datosFinales = getDatosFinales();
 
