@@ -2014,6 +2014,32 @@ if (esPolloCamaron(primerosTres)) {
       return Number(item.precioUnitario || item.precioFinal || 0);
     }
 
+    function recalcularPrecioItem(item) {
+      if (!item) return;
+
+      if (item.tipo === "personalizado" && item.categoria === "sushiburger") {
+        const cantidad = Number(item.cantidad || 1);
+        const unitario = Number(item.precioUnitario || 0);
+
+        const extras = Math.max(0, unitario - 6000);
+
+        const paresPromo = Math.floor(cantidad / 2);
+        const sobrantes = cantidad % 2;
+
+        const totalBase = (paresPromo * 10000) + (sobrantes * 6000);
+        const totalExtras = extras * cantidad;
+
+        item.descuentoPromoA = (unitario * cantidad) - (totalBase + totalExtras);
+        item.promoAAplicada = paresPromo > 0;
+        item.detallePromoA = paresPromo > 0 ? `${paresPromo} Promo A aplicada` : "";
+        item.precioFinal = totalBase + totalExtras;
+        return;
+      }
+
+      item.precioFinal = precioUnitarioItem(item) * Number(item.cantidad || 1);
+    }
+
+
     function puedeCambiarCantidad(item) {
       return item &&
         item.tipo === "personalizado" &&
@@ -2026,7 +2052,7 @@ if (esPolloCamaron(primerosTres)) {
 
       const nuevaCantidad = Math.max(1, cantidadItem(item) + cambio);
       item.cantidad = nuevaCantidad;
-      item.precioFinal = precioUnitarioItem(item) * nuevaCantidad;
+      recalcularPrecioItem(item);
 
       renderCarrito();
       await actualizarHorarioSiFinalAbierto();
@@ -2067,6 +2093,7 @@ if (esPolloCamaron(primerosTres)) {
 
     function renderCarrito() {
       const cart = document.getElementById("cartList");
+      carrito.forEach(recalcularPrecioItem);
       const total = carrito.reduce((acc, item) => acc + Number(item.precioFinal || 0), 0);
       document.getElementById("total").textContent = formatCLP(total);
 
@@ -2113,7 +2140,7 @@ if (esPolloCamaron(primerosTres)) {
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 ${item.extraPolloCamaron ? `<br>Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}` : ""}
-                
+                ${item.promoAAplicada ? `<br>🎉 Descuento Promo A: -${formatCLP(item.descuentoPromoA)}` : ""}
               </div>
             </div>
           `).join("")}
