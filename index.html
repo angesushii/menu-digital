@@ -445,6 +445,50 @@
       gap: 10px;
     }
 
+
+    .combo-warning {
+      display: none;
+      margin-top: 8px;
+      background: #fff8d6;
+      border: 1px solid #f0c94a;
+      color: #7a5300;
+      border-radius: 12px;
+      padding: 9px;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .combo-warning.active {
+      display: block;
+    }
+
+    .qty-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #fff8e8;
+      border: 1px solid #f0d28a;
+      border-radius: 999px;
+      padding: 5px;
+    }
+
+    .qty-btn {
+      background: #111;
+      color: white;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    .qty-number {
+      min-width: 22px;
+      text-align: center;
+      font-weight: 900;
+      color: #7a5300;
+    }
+
     .extra-box {
       margin-top: 12px;
       padding: 12px;
@@ -1083,6 +1127,7 @@
   <script>
     const WHATSAPP = "56974701060";
     const EXTRA_INGREDIENTE = 500;
+    const EXTRA_POLLO_CAMARON = 500;
     const STORAGE_ULTIMO_PEDIDO = "ultimoPedidoSushiAnge";
     const MIN_HANDROLL = 4;
     const MIN_SUSHI_10 = 5;
@@ -1092,18 +1137,6 @@
     let horaManualSeleccionada = "";
     let minutoManualSeleccionado = "";
     let intervaloHorarioActual = null;
-
-    async function esperarFirebase() {
-      for (let i = 0; i < 50; i++) {
-        if (window.db && window.doc && window.getDoc && window.onSnapshot) {
-          return true;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      return false;
-    }
 
     const HORARIO_CONFIG_DEFAULT = {
       activo: true,
@@ -1160,6 +1193,7 @@
 
       try {
         const ref = window.doc(window.db, "config", "horario");
+
         window.onSnapshot(ref, (snap) => {
           horarioConfig = snap.exists()
             ? normalizarHorarioConfig(snap.data())
@@ -1200,44 +1234,54 @@
         lista = [...disponibles];
       }
 
-      // Mostrar todos los ingredientes de la lista.
-      // Los no disponibles aparecerán con ❌ y bloqueados.
-      ingredientes = [...lista];
-      ingredientesDisponibles = [...disponibles];
-      ingredientesCargados = true;
+  ingredientes = [...lista];
+  ingredientesDisponibles = [...disponibles];
+  ingredientesCargados = true;
 
       refrescarSelectsIngredientesAbiertos();
     }
 
-    async function cargarIngredientesDesdeFirebase() {
-      const listo = await esperarFirebase();
-
-      if (!listo) {
-        console.error("Firebase no cargó a tiempo.");
-        ingredientes = [];
-        ingredientesDisponibles = [];
-        ingredientesCargados = true;
-        return;
-      }
-
-      try {
-        const ref = window.doc(window.db, "config", "ingredientes");
-        const snap = await window.getDoc(ref);
-
-        if (snap.exists()) {
-          aplicarStockIngredientes(snap.data());
-        } else {
-          ingredientes = [];
-          ingredientesDisponibles = [];
-          ingredientesCargados = true;
-        }
-      } catch (error) {
-        console.error("No se pudo cargar ingredientes:", error);
-        ingredientes = [];
-        ingredientesDisponibles = [];
-        ingredientesCargados = true;
-      }
+async function esperarFirebase() {
+  for (let i = 0; i < 50; i++) {
+    if (window.db && window.doc && window.getDoc && window.onSnapshot) {
+      return true;
     }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  return false;
+}
+
+async function cargarIngredientesDesdeFirebase() {
+  const listo = await esperarFirebase();
+
+  if (!listo) {
+    console.error("Firebase no cargó a tiempo.");
+    ingredientes = [];
+    ingredientesDisponibles = [];
+    ingredientesCargados = true;
+    return;
+  }
+
+  try {
+    const ref = window.doc(window.db, "config", "ingredientes");
+    const snap = await window.getDoc(ref);
+
+    if (snap.exists()) {
+      aplicarStockIngredientes(snap.data());
+    } else {
+      ingredientes = [];
+      ingredientesDisponibles = [];
+      ingredientesCargados = true;
+    }
+  } catch (error) {
+    console.error("No se pudo cargar ingredientes:", error);
+    ingredientes = [];
+    ingredientesDisponibles = [];
+    ingredientesCargados = true;
+  }
+}
 
     function iniciarEscuchaIngredientes() {
       if (!window.db || !window.doc || !window.onSnapshot) return;
@@ -1258,13 +1302,6 @@
     function ingredienteDisponible(ing) {
       return ingredientesDisponibles.includes(ing);
     }
-
-    function etiquetaIngrediente(ing) {
-      return ingredienteDisponible(ing)
-        ? ing
-        : `❌ ${limpiarIngrediente(ing)} (agotado)`;
-    }
-
 
     function refrescarSelectsIngredientesAbiertos() {
       document.querySelectorAll("select[id^='ing']").forEach(select => {
@@ -1347,6 +1384,44 @@
       card.classList.add("active");
     }
 
+
+    function buscarIngredientesNoDisponiblesEnCarrito(items) {
+      const faltantes = [];
+
+      (items || []).forEach((item, itemIndex) => {
+        (item.detalleRolls || []).forEach((roll, rollIndex) => {
+          (roll.ingredientes || []).forEach((ing, ingIndex) => {
+            if (ing && !ingredienteDisponible(ing)) {
+              faltantes.push({
+                itemIndex,
+                rollIndex,
+                ingIndex,
+                ingrediente: ing,
+                ingredienteLimpio: limpiarIngrediente(ing),
+                producto: item.nombre || "Producto",
+                roll: roll.nombre || `Roll ${rollIndex + 1}`
+              });
+            }
+          });
+        });
+      });
+
+      return faltantes;
+    }
+
+    function resumenIngredientesNoDisponibles(faltantes) {
+      const nombres = [...new Set((faltantes || []).map(f => f.ingredienteLimpio))];
+
+      if (!nombres.length) return "";
+
+      if (nombres.length === 1) {
+        return `${nombres[0]} no está disponible por el momento. Puedes editar ese ingrediente antes de finalizar.`;
+      }
+
+      return `${nombres.join(", ")} no están disponibles por el momento. Puedes editar esos ingredientes antes de finalizar.`;
+    }
+
+
     function repetirUltimoPedido() {
       const ultimo = obtenerUltimoPedidoLocal();
 
@@ -1355,7 +1430,10 @@
         return;
       }
 
-      carrito = JSON.parse(JSON.stringify(ultimo.carrito));
+      const pedidoAnterior = JSON.parse(JSON.stringify(ultimo.carrito));
+      const faltantes = buscarIngredientesNoDisponiblesEnCarrito(pedidoAnterior);
+
+      carrito = pedidoAnterior;
 
       if (ultimo.cliente && ultimo.cliente !== "No indicado") {
         document.getElementById("cliente").value = ultimo.cliente;
@@ -1367,6 +1445,23 @@
 
       renderCarrito();
       ocultarSugerenciaPedido();
+
+      if (faltantes.length) {
+        const primero = faltantes[0];
+
+        alert(
+          "Tu pedido anterior tiene ingredientes agotados:\n\n" +
+          resumenIngredientesNoDisponibles(faltantes) +
+          "\n\nTe llevaremos a editar el primer producto afectado."
+        );
+
+        setTimeout(() => {
+          editarItem(primero.itemIndex);
+        }, 150);
+
+        return;
+      }
+
       document.querySelector(".cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -1387,20 +1482,30 @@
     }
 
     function ingredientesIncompatibles(ingrediente) {
-      const limpio = limpiarIngrediente(ingrediente);
-
-      if (limpio === "Pollo") return ["Camarón"];
-      if (limpio === "Camarón") return ["Pollo"];
-
       return [];
     }
 
+    function esPolloCamaron(ingredientesRoll) {
+      const limpios = (ingredientesRoll || []).map(limpiarIngrediente);
+      return limpios.includes("Pollo") && limpios.includes("Camarón");
+    }
+
+    function necesitaAvisoPolloCamaron(ing, seleccionados) {
+      const limpio = limpiarIngrediente(ing);
+      const otros = (seleccionados || []).map(limpiarIngrediente);
+
+      return (
+        (limpio === "Pollo" && otros.includes("Camarón")) ||
+        (limpio === "Camarón" && otros.includes("Pollo"))
+      );
+    }
+
     function etiquetaIngrediente(ing) {
-  return ingredienteDisponible(ing)
-    ? ing
-    : `❌ ${limpiarIngrediente(ing)} (agotado)`;
-}
-    
+      return ingredienteDisponible(ing)
+        ? ing
+        : `❌ ${limpiarIngrediente(ing)} (agotado)`;
+    }
+
     function crearOpciones(valorActual = "", seleccionados = [], aplicarReglaPolloCamaron = true) {
       if (!ingredientesCargados) {
         return `<option value="">Cargando ingredientes...</option>`;
@@ -1410,22 +1515,13 @@
         return `<option value="">No hay ingredientes configurados</option>`;
       }
 
-      const incompatibles = aplicarReglaPolloCamaron
-        ? seleccionados.flatMap(ingredientesIncompatibles)
-        : [];
-
       const opciones = ingredientes.filter(ing => {
-        const limpio = limpiarIngrediente(ing);
         const agotado = !ingredienteDisponible(ing);
 
-        // Mantiene visible el valor actual para no perderlo si el stock cambia.
         if (ing === valorActual) return true;
-
-        // Los agotados aparecen, pero bloqueados.
         if (agotado) return true;
 
         if (seleccionados.includes(ing)) return false;
-        if (incompatibles.includes(limpio)) return false;
 
         return true;
       });
@@ -1435,12 +1531,13 @@
           const agotado = !ingredienteDisponible(ing);
           const selected = ing === valorActual ? "selected" : "";
           const disabled = agotado ? "disabled" : "";
+          const avisoCombo = necesitaAvisoPolloCamaron(ing, seleccionados);
+          const style = avisoCombo && !agotado ? 'style="background:#fff3b0;color:#7a5300;font-weight:900;"' : "";
 
-          return `<option value="${ing}" ${selected} ${disabled}>${etiquetaIngrediente(ing)}</option>`;
+          return `<option value="${ing}" ${selected} ${disabled} ${style}>${etiquetaIngrediente(ing)}</option>`;
         })
         .join("");
     }
-
 
     function togglePromos() {
       const section = document.getElementById("promoSection");
@@ -1529,14 +1626,17 @@
             <div>
               <label>Ingrediente 1</label>
               <select id="ing1-${id}-${rollIndex}" onchange="actualizarIngredientes('${id}', ${rollIndex})"></select>
+              <div id="comboWarn1-${id}-${rollIndex}" class="combo-warning">La combinación Pollo + Camarón tiene un costo adicional de ${formatCLP(EXTRA_POLLO_CAMARON)}.</div>
             </div>
             <div>
               <label>Ingrediente 2</label>
               <select id="ing2-${id}-${rollIndex}" onchange="actualizarIngredientes('${id}', ${rollIndex})"></select>
+              <div id="comboWarn2-${id}-${rollIndex}" class="combo-warning">La combinación Pollo + Camarón tiene un costo adicional de ${formatCLP(EXTRA_POLLO_CAMARON)}.</div>
             </div>
             <div>
               <label>Ingrediente 3</label>
               <select id="ing3-${id}-${rollIndex}" onchange="actualizarIngredientes('${id}', ${rollIndex})"></select>
+              <div id="comboWarn3-${id}-${rollIndex}" class="combo-warning">La combinación Pollo + Camarón tiene un costo adicional de ${formatCLP(EXTRA_POLLO_CAMARON)}.</div>
             </div>
           </div>
 
@@ -1546,6 +1646,7 @@
               <button class="remove-extra-btn" onclick="quitarIngredienteExtra('${id}', ${rollIndex})">Cerrar ✕</button>
             </div>
             <select id="ing4-${id}-${rollIndex}" onchange="actualizarIngredientes('${id}', ${rollIndex})"></select>
+            <div id="comboWarn4-${id}-${rollIndex}" class="combo-warning">La combinación Pollo + Camarón tiene un costo adicional de ${formatCLP(EXTRA_POLLO_CAMARON)}.</div>
             <div class="small">El cuarto ingrediente suma ${formatCLP(EXTRA_INGREDIENTE)} en este roll.</div>
           </div>
 
@@ -1568,20 +1669,34 @@
           .map(s => s.value)
           .filter(Boolean);
 
-        const seleccionadosPrimerosTres = [1,2,3]
-          .filter(x => x !== n)
-          .map(x => document.getElementById(`ing${x}-${id}-${rollIndex}`))
-          .filter(Boolean)
-          .map(s => s.value)
-          .filter(Boolean);
-
-        const aplicarReglaPolloCamaron = n <= 3;
-
         select.innerHTML = crearOpciones(
           valorActual,
-          aplicarReglaPolloCamaron ? seleccionadosPrimerosTres : seleccionadosOtros,
-          aplicarReglaPolloCamaron
+          seleccionadosOtros,
+          n <= 3
         );
+      });
+
+      actualizarAvisosPolloCamaron(id, rollIndex);
+    }
+
+    function actualizarAvisosPolloCamaron(id, rollIndex) {
+      const valores = [1,2,3,4].map(n => {
+        const select = document.getElementById(`ing${n}-${id}-${rollIndex}`);
+        return select ? select.value : "";
+      });
+
+      [1,2,3,4].forEach(n => {
+        const aviso = document.getElementById(`comboWarn${n}-${id}-${rollIndex}`);
+        if (!aviso) return;
+
+        const seleccionado = valores[n - 1];
+        const anteriores = valores.slice(0, n - 1).filter(Boolean);
+
+        if (seleccionado && necesitaAvisoPolloCamaron(seleccionado, anteriores)) {
+          aviso.classList.add("active");
+        } else {
+          aviso.classList.remove("active");
+        }
       });
     }
 
@@ -1628,6 +1743,7 @@
       const detalleRolls = [];
       let extraSalmon = 0;
       let extraCuarto = 0;
+      let extraPolloCamaron = 0;
 
       for (let i = 0; i < rolls.length; i++) {
         const ing1 = document.getElementById(`ing1-${id}-${i}`).value;
@@ -1654,17 +1770,14 @@
           return null;
         }
 
-        const primerosTresLimpios = [ing1, ing2, ing3].map(limpiarIngrediente);
-
-        if (primerosTresLimpios.includes("Pollo") && primerosTresLimpios.includes("Camarón")) {
-          alert(`No puedes elegir Pollo y Camarón juntos en los primeros 3 ingredientes de: ${rolls[i]}. Puedes usar uno de ellos como ingrediente 4.`);
-          return null;
-        }
-
         const ingredientesRoll = [ing1, ing2, ing3];
         if (ing4) {
           ingredientesRoll.push(ing4);
           extraCuarto += EXTRA_INGREDIENTE;
+        }
+
+        if (esPolloCamaron(ingredientesRoll)) {
+          extraPolloCamaron += EXTRA_POLLO_CAMARON;
         }
 
         if (ingredientesRoll.some(ing => limpiarIngrediente(ing) === "Salmón")) {
@@ -1674,7 +1787,7 @@
         detalleRolls.push({ nombre: rolls[i], ingredientes: ingredientesRoll });
       }
 
-      return { detalleRolls, extraSalmon, extraCuarto };
+      return { detalleRolls, extraSalmon, extraCuarto, extraPolloCamaron };
     }
 
     function guardarPromo(id) {
@@ -1692,8 +1805,11 @@
         observaciones: obs,
         extraSalmon: datos.extraSalmon,
         extraCuarto: datos.extraCuarto,
+        extraPolloCamaron: datos.extraPolloCamaron,
         precioBase: promo.precio,
-        precioFinal: promo.precio + datos.extraSalmon + datos.extraCuarto
+        cantidad: 1,
+        precioUnitario: promo.precio + datos.extraSalmon + datos.extraCuarto + datos.extraPolloCamaron,
+        precioFinal: promo.precio + datos.extraSalmon + datos.extraCuarto + datos.extraPolloCamaron
       };
 
       if (editandoIndex !== null) {
@@ -1817,8 +1933,11 @@
         observaciones: obs,
         extraSalmon: datos.extraSalmon,
         extraCuarto: datos.extraCuarto,
+        extraPolloCamaron: datos.extraPolloCamaron,
         precioBase: builderEnvoltura.precio,
-        precioFinal: builderEnvoltura.precio + datos.extraSalmon + datos.extraCuarto
+        cantidad: 1,
+        precioUnitario: builderEnvoltura.precio + datos.extraSalmon + datos.extraCuarto + datos.extraPolloCamaron,
+        precioFinal: builderEnvoltura.precio + datos.extraSalmon + datos.extraCuarto + datos.extraPolloCamaron
       };
 
       if (editandoIndex !== null) {
@@ -1839,6 +1958,32 @@
       document.getElementById("builderConfig").innerHTML = "";
       document.querySelectorAll(".type-btn").forEach(btn => btn.classList.remove("active"));
     }
+
+    function cantidadItem(item) {
+      return Number(item.cantidad || 1);
+    }
+
+    function precioUnitarioItem(item) {
+      return Number(item.precioUnitario || item.precioFinal || 0);
+    }
+
+    function puedeCambiarCantidad(item) {
+      return item &&
+        item.tipo === "personalizado" &&
+        (item.categoria === "handroll" || item.categoria === "sushiburger");
+    }
+
+    function actualizarCantidadItem(index, cambio) {
+      const item = carrito[index];
+      if (!item || !puedeCambiarCantidad(item)) return;
+
+      const nuevaCantidad = Math.max(1, cantidadItem(item) + cambio);
+      item.cantidad = nuevaCantidad;
+      item.precioFinal = precioUnitarioItem(item) * nuevaCantidad;
+
+      renderCarrito();
+    }
+
 
     function eliminarItem(index) {
       carrito.splice(index, 1);
@@ -1866,7 +2011,7 @@
 
     function renderCarrito() {
       const cart = document.getElementById("cartList");
-      const total = carrito.reduce((acc, item) => acc + item.precioFinal, 0);
+      const total = carrito.reduce((acc, item) => acc + Number(item.precioFinal || 0), 0);
       document.getElementById("total").textContent = formatCLP(total);
 
       if (carrito.length === 0) {
@@ -1893,17 +2038,25 @@
               <div class="cart-item-head">
                 <div>
                   <strong>${item.nombre}</strong><br>
-                  <span class="muted">${item.piezas || ""} · ${formatCLP(item.precioFinal)}</span>
+                  <span class="muted">${item.piezas || ""}${puedeCambiarCantidad(item) ? ` · Cantidad: ${cantidadItem(item)}` : ""} · ${formatCLP(item.precioFinal)}</span>
                 </div>
                 <div class="cart-actions">
+                  ${puedeCambiarCantidad(item) ? `
+                    <div class="qty-controls">
+                      <button class="qty-btn" onclick="actualizarCantidadItem(${item.index}, -1)">−</button>
+                      <span class="qty-number">${cantidadItem(item)}</span>
+                      <button class="qty-btn" onclick="actualizarCantidadItem(${item.index}, 1)">+</button>
+                    </div>
+                  ` : ""}
                   <button class="edit-btn" onclick="editarItem(${item.index})">Editar</button>
                   <button class="delete-btn" onclick="eliminarItem(${item.index})">🗑️</button>
                 </div>
               </div>
               <div style="margin-top:8px;">
-                ${item.detalleRolls.map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(limpiarIngrediente).join(", ")}`).join("<br>")}
+                ${item.detalleRolls.map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(ing => ingredienteDisponible(ing) ? limpiarIngrediente(ing) : `❌ ${limpiarIngrediente(ing)} (agotado)`).join(", ")}`).join("<br>")}
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
+                ${item.extraPolloCamaron ? `<br>Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}` : ""}
                 
               </div>
             </div>
@@ -2304,6 +2457,8 @@ function cerrarConfirmacion() {
       nota.textContent = `Preparación: ${tiempoPedido} min · Cola: ${cola} min · Atención: ${cfg.apertura} a ${cfg.cierre}`;
     }
 
+
+
     function generarSelectorHoraManual() {
       const contHoras = document.getElementById("horaManualHoras");
       const contMinutos = document.getElementById("horaManualMinutos");
@@ -2541,7 +2696,7 @@ botonConfirmar.style.cursor = "not-allowed";
 
       const cliente = obtenerNombreCliente();
       const telefonoCliente = obtenerTelefonoCliente();
-      const total = carrito.reduce((acc, item) => acc + item.precioFinal, 0);
+      const total = carrito.reduce((acc, item) => acc + Number(item.precioFinal || 0), 0);
       const datosFinales = getDatosFinales();
 
       if (horarioConfig?.activo === false) {
@@ -2616,15 +2771,19 @@ botonConfirmar.style.cursor = "not-allowed";
         alert("El pedido se enviará por WhatsApp, pero no se pudo guardar en el registro interno.");
       }
 
-      let mensaje = `Hola, quiero hacer un pedido:%0A%0A`;
+let mensaje =
+  `🍣 *SUSHI ANGE* 🍣%0A` +
+  `⚠️ Por favor no editar este mensaje para evitar errores en el pedido.%0A%0A` +
+  `Hola, quiero hacer un pedido:%0A%0A`;
       carrito.forEach((item, i) => {
         mensaje += `*${i + 1}. ${item.nombre}* - ${formatCLP(item.precioFinal)}%0A`;
-        mensaje += `${item.piezas}%0A`;
+        mensaje += `${item.piezas}${cantidadItem(item) > 1 ? ` · Cantidad: ${cantidadItem(item)}` : ""}%0A`;
         item.detalleRolls.forEach(roll => {
           mensaje += `- ${roll.nombre}: ${roll.ingredientes.map(limpiarIngrediente).join(", ")}%0A`;
         });
         if (item.extraSalmon) mensaje += `Adicional salmón: ${formatCLP(item.extraSalmon)}%0A`;
         if (item.extraCuarto) mensaje += `Ingrediente extra: ${formatCLP(item.extraCuarto)}%0A`;
+        if (item.extraPolloCamaron) mensaje += `Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}%0A`;
         
         mensaje += `%0A`;
       });
@@ -2645,8 +2804,10 @@ if (datosFinales.palillos === "Si") {
 }
 
 if (datosFinales.observacionesFinales) {
-  mensaje += `Observaciones finales: ${datosFinales.observacionesFinales}`;
+  mensaje += `Observaciones finales: ${datosFinales.observacionesFinales}%0A`;
 }
+
+mensaje += `%0A⏱️ El tiempo informado es una estimación y puede variar según la cantidad de pedidos en preparación.`;
 
 window.location.href =
   `https://wa.me/${WHATSAPP}?text=${mensaje}`;
