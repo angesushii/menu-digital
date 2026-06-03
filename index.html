@@ -1138,6 +1138,7 @@
     let minutoManualSeleccionado = "";
     let intervaloHorarioActual = null;
     let intervaloConfigHorario = null;
+    let firmaUltimaConfigHorario = "";
 
     const HORARIO_CONFIG_DEFAULT = {
       activo: true,
@@ -1168,6 +1169,20 @@
       };
     }
 
+    function firmaHorarioConfig(cfg) {
+      const normal = normalizarHorarioConfig(cfg || {});
+      return JSON.stringify({
+        activo: normal.activo,
+        apertura: normal.apertura,
+        cierre: normal.cierre,
+        minimoRetiro: normal.minimoRetiro,
+        intervaloMinutos: normal.intervaloMinutos,
+        cantidadOpciones: normal.cantidadOpciones,
+        tiempos: normal.tiempos,
+        mensajeCerrado: normal.mensajeCerrado
+      });
+    }
+
     async function cargarHorarioDesdeFirebase() {
       const listo = await esperarFirebase();
 
@@ -1196,12 +1211,18 @@
         const ref = window.doc(window.db, "config", "horario");
 
         window.onSnapshot(ref, (snap) => {
-          horarioConfig = snap.exists()
+          const nuevaConfig = snap.exists()
             ? normalizarHorarioConfig(snap.data())
             : normalizarHorarioConfig({});
 
+          const firmaNueva = firmaHorarioConfig(nuevaConfig);
+          const cambio = firmaNueva !== firmaUltimaConfigHorario;
+
+          horarioConfig = nuevaConfig;
+          firmaUltimaConfigHorario = firmaNueva;
+
           const panel = document.getElementById("finalPanel");
-          if (panel && panel.classList.contains("active")) {
+          if (cambio && panel && panel.classList.contains("active")) {
             generarOpcionesHorario();
           }
         });
@@ -1215,11 +1236,18 @@
         clearInterval(intervaloConfigHorario);
       }
 
+      firmaUltimaConfigHorario = firmaHorarioConfig(horarioConfig);
+
       intervaloConfigHorario = setInterval(async () => {
+        const firmaAntes = firmaHorarioConfig(horarioConfig);
+
         await cargarHorarioDesdeFirebase();
 
+        const firmaDespues = firmaHorarioConfig(horarioConfig);
+        const cambio = firmaAntes !== firmaDespues;
+
         const panel = document.getElementById("finalPanel");
-        if (panel && panel.classList.contains("active")) {
+        if (cambio && panel && panel.classList.contains("active")) {
           generarOpcionesHorario();
         }
       }, 5000);
@@ -2361,7 +2389,8 @@ function cerrarConfirmacion() {
       const horaAnterior = opcionActual?.hora || "";
       const eraManual = tipoAnterior === "manual";
 
-      loading.style.display = "block";
+      const yaTieneOpciones = cont.innerHTML.trim().length > 0;
+      loading.style.display = yaTieneOpciones ? "none" : "block";
       cont.innerHTML = "";
       nota.textContent = "";
 
@@ -2871,6 +2900,7 @@ window.location.href =
 async function iniciarCarta() {
   await cargarIngredientesDesdeFirebase();
   await cargarHorarioDesdeFirebase();
+  firmaUltimaConfigHorario = firmaHorarioConfig(horarioConfig);
   iniciarEscuchaIngredientes();
   iniciarEscuchaHorario();
   iniciarActualizacionHorarioCada5Segundos();
