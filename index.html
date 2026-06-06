@@ -92,6 +92,43 @@
       backdrop-filter: blur(8px);
     }
 
+
+    .menu-cerrado-aviso {
+      display: none;
+      max-width: 760px;
+      margin: 22px auto 0;
+      padding: 20px;
+      border-radius: var(--radio);
+      background: #fff1f1;
+      border: 2px solid rgba(214,40,40,.28);
+      box-shadow: var(--sombra);
+      color: var(--rojo);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .menu-cerrado-aviso.active {
+      display: block;
+    }
+
+    .menu-cerrado-aviso h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+
+    .menu-cerrado-aviso p {
+      margin: 0;
+      color: #7a1f1f;
+      line-height: 1.4;
+      font-size: 15px;
+    }
+
+    body.menu-cerrado main,
+    body.menu-cerrado .cart-bar {
+      display: none;
+    }
+
+
     main {
       max-width: 980px;
       margin: auto;
@@ -918,7 +955,44 @@
       .hero h1 { font-size: 29px; }
       .offer-head h2, .builder-head h2, .config-head h2 { font-size: 22px; }
       .offer-price { font-size: 16px; }
-      main { padding-left: 12px; padding-right: 12px; }
+  
+    .menu-cerrado-aviso {
+      display: none;
+      max-width: 760px;
+      margin: 22px auto 0;
+      padding: 20px;
+      border-radius: var(--radio);
+      background: #fff1f1;
+      border: 2px solid rgba(214,40,40,.28);
+      box-shadow: var(--sombra);
+      color: var(--rojo);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .menu-cerrado-aviso.active {
+      display: block;
+    }
+
+    .menu-cerrado-aviso h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+
+    .menu-cerrado-aviso p {
+      margin: 0;
+      color: #7a1f1f;
+      line-height: 1.4;
+      font-size: 15px;
+    }
+
+    body.menu-cerrado main,
+    body.menu-cerrado .cart-bar {
+      display: none;
+    }
+
+
+    main { padding-left: 12px; padding-right: 12px; }
       .config-head-row, .cart-item-head { flex-direction: column; }
       .cart-actions { justify-content: flex-start; }
     }
@@ -935,6 +1009,11 @@
       <span class="badge">📲 Pedido rápido</span>
     </div>
   </header>
+
+  <section id="menuCerradoAviso" class="menu-cerrado-aviso">
+    <h2>🚫 Menú digital cerrado</h2>
+    <p id="menuCerradoMensaje">No estamos recibiendo pedidos en este momento.</p>
+  </section>
 
   <main>
     <div class="section-title">
@@ -1158,6 +1237,38 @@
 
     let horarioConfig = { ...HORARIO_CONFIG_DEFAULT, tiempos: { ...HORARIO_CONFIG_DEFAULT.tiempos } };
 
+    function menuDigitalAbierto() {
+      return normalizarHorarioConfig(horarioConfig || {}).activo !== false;
+    }
+
+    function aplicarEstadoMenuDigital() {
+      const cfg = normalizarHorarioConfig(horarioConfig || {});
+      const abierto = cfg.activo !== false;
+      const aviso = document.getElementById("menuCerradoAviso");
+      const mensaje = document.getElementById("menuCerradoMensaje");
+
+      document.body.classList.toggle("menu-cerrado", !abierto);
+
+      if (aviso) aviso.classList.toggle("active", !abierto);
+      if (mensaje) {
+        mensaje.textContent = cfg.mensajeCerrado || "No estamos recibiendo pedidos en este momento.";
+      }
+
+      if (!abierto) {
+        const finalPanel = document.getElementById("finalPanel");
+        if (finalPanel) finalPanel.classList.remove("active");
+
+        if (intervaloHorarioActual) {
+          clearInterval(intervaloHorarioActual);
+          intervaloHorarioActual = null;
+        }
+
+        const sendBtn = document.querySelector(".send-btn");
+        if (sendBtn) sendBtn.style.display = "block";
+      }
+    }
+
+
     function normalizarHorarioConfig(data = {}) {
       return {
         ...HORARIO_CONFIG_DEFAULT,
@@ -1198,9 +1309,12 @@
         horarioConfig = snap.exists()
           ? normalizarHorarioConfig(snap.data())
           : normalizarHorarioConfig({});
+
+        aplicarEstadoMenuDigital();
       } catch (error) {
         console.error("No se pudo cargar horario:", error);
         horarioConfig = normalizarHorarioConfig({});
+        aplicarEstadoMenuDigital();
       }
     }
 
@@ -1220,6 +1334,7 @@
 
           horarioConfig = nuevaConfig;
           firmaUltimaConfigHorario = firmaNueva;
+          aplicarEstadoMenuDigital();
 
           const panel = document.getElementById("finalPanel");
           if (cambio && panel && panel.classList.contains("active")) {
@@ -1616,6 +1731,11 @@ async function cargarIngredientesDesdeFirebase() {
     }
 
     function abrirPromo(id, datosExistentes = null, indexEditar = null) {
+      if (!menuDigitalAbierto()) {
+        alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+        return;
+      }
+
       const base = promos.find(p => p.id === id);
       itemActivo = { ...base, tipo: "promo" };
       editandoIndex = indexEditar;
@@ -1836,6 +1956,12 @@ if (esPolloCamaron(primerosTres)) {
     }
 
     async function guardarPromo(id) {
+      if (!menuDigitalAbierto()) {
+        alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+        aplicarEstadoMenuDigital();
+        return;
+      }
+
       const promo = itemActivo;
       const datos = recolectarRolls(id, promo.rolls);
       if (!datos) return;
@@ -1870,6 +1996,11 @@ if (esPolloCamaron(primerosTres)) {
     }
 
     function seleccionarTipoPersonalizado(tipo, datosExistentes = null, indexEditar = null) {
+      if (!menuDigitalAbierto()) {
+        alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+        return;
+      }
+
       builderTipo = tipo;
       builderEnvoltura = datosExistentes?.envoltura || null;
       editandoIndex = indexEditar;
@@ -1948,6 +2079,12 @@ if (esPolloCamaron(primerosTres)) {
     }
 
     async function guardarPersonalizado(formId) {
+      if (!menuDigitalAbierto()) {
+        alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+        aplicarEstadoMenuDigital();
+        return;
+      }
+
       const datos = recolectarRolls(formId, [builderEnvoltura.nombre]);
       if (!datos) return;
       const obs = "";
@@ -2266,6 +2403,12 @@ function actualizarCampoNombreFinal() {
 }
 
 async function abrirConfirmacion() {
+  if (!menuDigitalAbierto()) {
+    alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+    aplicarEstadoMenuDigital();
+    return;
+  }
+
   if (carrito.length === 0) {
     alert("Agrega al menos un producto al pedido.");
     return;
@@ -2392,14 +2535,56 @@ function cerrarConfirmacion() {
       return null;
     }
 
-    async function calcularColaActualMinutos() {
+    function seSolapan(aInicio, aFin, bInicio, bFin) {
+      return aInicio < bFin && aFin > bInicio;
+    }
+
+    function bloqueDesdePedido(pedido) {
+      const estado = pedido.estado || "nuevo";
+      if (estado === "terminado") return null;
+
+      const fechaPedido = getFechaPedidoObj(pedido);
+      if (!fechaPedido) return null;
+
+      const horario = pedido.horarioRetiro || pedido.datosFinales?.horarioRetiro || {};
+      const tipo = horario.tipo || "asap";
+      const minutos = Number(
+        pedido.tiempoPreparacion ||
+        horario.tiempoPreparacion ||
+        calcularTiempoPreparacion(pedido.productos || [])
+      );
+
+      if (!Number.isFinite(minutos) || minutos <= 0) return null;
+
+      let fin = null;
+      let inicio = null;
+
+      if (tipo === "agendado" || tipo === "manual") {
+        // Agendado/manual: bloquea hacia atrás desde la hora de retiro.
+        fin = getFechaHoraRetiroObj(pedido);
+        if (!fin) return null;
+        inicio = sumarMinutos(fin, -minutos);
+      } else {
+        // ASAP: usa el retiro guardado; si no existe, fecha del pedido + preparación.
+        fin = getFechaHoraRetiroObj(pedido) || sumarMinutos(fechaPedido, minutos);
+        inicio = sumarMinutos(fin, -minutos);
+
+        if (inicio < fechaPedido) {
+          inicio = fechaPedido;
+          fin = sumarMinutos(inicio, minutos);
+        }
+      }
+
+      return { inicio, fin, tipo, minutos };
+    }
+
+    async function obtenerBloquesOcupadosCocina() {
       if (!window.db || !window.getDocs || !window.collection || !window.query || !window.orderBy) {
-        return 0;
+        return [];
       }
 
       const hoy = fechaLocalChileYYYYMMDD();
       const ahora = new Date();
-      const limiteCercano = sumarMinutos(ahora, 60);
 
       const q = window.query(
         window.collection(window.db, "pedidos"),
@@ -2407,57 +2592,59 @@ function cerrarConfirmacion() {
       );
 
       const snap = await window.getDocs(q);
-      const pendientes = [];
+      const bloques = [];
 
       snap.forEach(docSnap => {
         const pedido = docSnap.data();
-        const estado = pedido.estado || "nuevo";
-        if (estado === "terminado") return;
+        const bloque = bloqueDesdePedido(pedido);
+        if (!bloque) return;
 
-        const fechaPedido = getFechaPedidoObj(pedido);
-        if (!fechaPedido) return;
-
-        const fechaLocal = fechaPedido.toLocaleDateString("en-CA", {
+        const fechaLocal = bloque.fin.toLocaleDateString("en-CA", {
           timeZone: "America/Santiago"
         });
 
         if (fechaLocal !== hoy) return;
 
-        const horario = pedido.horarioRetiro || pedido.datosFinales?.horarioRetiro || {};
-        const tipo = horario.tipo || "asap";
+        // Si el bloque ya terminó, no ocupa cocina aunque no esté marcado terminado.
+        if (bloque.fin <= ahora) return;
 
-        // Los pedidos agendados muy lejanos no bloquean la cola inmediata.
-        if (tipo === "agendado") {
-          const fechaRetiro = getFechaHoraRetiroObj(pedido);
-          if (!fechaRetiro || fechaRetiro > limiteCercano) return;
+        bloques.push(bloque);
+      });
+
+      bloques.sort((a, b) => a.inicio - b.inicio);
+      return bloques;
+    }
+
+    function buscarFinDisponibleDesde(inicioBase, minutosPedido, bloques) {
+      let inicio = new Date(inicioBase);
+      let fin = sumarMinutos(inicio, minutosPedido);
+
+      let cambio = true;
+
+      while (cambio) {
+        cambio = false;
+
+        for (const bloque of bloques) {
+          if (seSolapan(inicio, fin, bloque.inicio, bloque.fin)) {
+            inicio = new Date(bloque.fin);
+            fin = sumarMinutos(inicio, minutosPedido);
+            cambio = true;
+            break;
+          }
         }
+      }
 
-        pendientes.push({
-          fechaPedido,
-          minutos: Number(
-            pedido.tiempoPreparacion ||
-            calcularTiempoPreparacion(pedido.productos || [])
-          )
-        });
-      });
+      return { inicio, fin };
+    }
 
-      if (!pendientes.length) return 0;
+    async function calcularPrimeraHoraDisponible(tiempoPedido) {
+      const cfg = normalizarHorarioConfig(horarioConfig || {});
+      const ahora = new Date();
+      const minimoRetiro = fechaHoraChileDesdeHHMM(cfg.minimoRetiro || cfg.apertura || "00:00");
+      const inicioBase = maxFecha(ahora, minimoRetiro);
 
-      pendientes.sort((a, b) => a.fechaPedido - b.fechaPedido);
-
-      let finCola = new Date(pendientes[0].fechaPedido);
-
-      pendientes.forEach(pedido => {
-        const inicioPedido = pedido.fechaPedido > finCola
-          ? pedido.fechaPedido
-          : finCola;
-
-        finCola = sumarMinutos(inicioPedido, pedido.minutos);
-      });
-
-      const colaRestante = Math.ceil((finCola - ahora) / 60000);
-
-      return Math.max(0, colaRestante);
+      const bloques = await obtenerBloquesOcupadosCocina();
+      return buscarFinDisponibleDesde(inicioBase, tiempoPedido, bloques);
     }
 
     async function generarOpcionesHorario() {
@@ -2523,17 +2710,28 @@ function cerrarConfirmacion() {
 
       const tiempoPedido = calcularTiempoPreparacion(carrito);
 
+      let inicioDisponible = new Date();
+      let primeraHora = redondearArriba5Min(sumarMinutos(new Date(), tiempoPedido));
       let cola = 0;
+
       try {
-        cola = await calcularColaActualMinutos();
+        const disponible = await calcularPrimeraHoraDisponible(tiempoPedido);
+        inicioDisponible = disponible.inicio;
+        primeraHora = redondearArriba5Min(disponible.fin);
+
+        const ahora = new Date();
+        cola = Math.max(0, Math.ceil((inicioDisponible - ahora) / 60000));
       } catch (error) {
-        console.error("No se pudo calcular la cola:", error);
+        console.error("No se pudo calcular la agenda de cocina:", error);
+
+        const ahora = new Date();
+        const minimoRetiro = fechaHoraChileDesdeHHMM(cfg.minimoRetiro || cfg.apertura || "00:00");
+        const inicioBase = maxFecha(ahora, minimoRetiro);
+        inicioDisponible = inicioBase;
+        primeraHora = redondearArriba5Min(sumarMinutos(inicioBase, tiempoPedido));
+        cola = 0;
       }
 
-      const ahora = new Date();
-      const porCola = redondearArriba5Min(sumarMinutos(ahora, cola + tiempoPedido));
-      const minimoRetiro = fechaHoraChileDesdeHHMM(cfg.minimoRetiro || cfg.apertura || "00:00");
-      const primeraHora = maxFecha(porCola, minimoRetiro);
       const cierre = fechaHoraChileDesdeHHMM(cfg.cierre || "23:59");
 
       if (primeraHora > cierre) {
@@ -2619,7 +2817,7 @@ function cerrarConfirmacion() {
       toggleHoraManual();
 
       loading.style.display = "none";
-      nota.textContent = `Preparación: ${tiempoPedido} min · Cola: ${cola} min · Atención: ${cfg.apertura} a ${cfg.cierre}`;
+      nota.textContent = `Preparación: ${tiempoPedido} min · Espera por cocina: ${cola} min · Atención: ${cfg.apertura} a ${cfg.cierre}`;
     }
 
 
@@ -3007,6 +3205,7 @@ window.location.href =
 async function iniciarCarta() {
   await cargarIngredientesDesdeFirebase();
   await cargarHorarioDesdeFirebase();
+  aplicarEstadoMenuDigital();
   firmaUltimaConfigHorario = firmaHorarioConfig(horarioConfig);
   iniciarEscuchaIngredientes();
   iniciarEscuchaHorario();
