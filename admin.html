@@ -213,6 +213,150 @@
       color: var(--rojo);
     }
 
+
+    .resumen-dia-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .resumen-dia-head h2 {
+      margin: 0;
+    }
+
+    .resumen-dia-toggle {
+      background: #111;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .resumen-dia-body {
+      display: none;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .resumen-dia-body.active {
+      display: block;
+    }
+
+    .resumen-dia-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .resumen-dia-box {
+      background: #fff8e8;
+      border: 1px solid #f0d28a;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .resumen-dia-box span {
+      display: block;
+      color: #7a5300;
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .resumen-dia-box strong {
+      color: var(--rojo);
+      font-size: 28px;
+    }
+
+    .resumen-dia-note {
+      margin-top: 10px;
+      color: #666;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 760px) {
+      .resumen-dia-grid { grid-template-columns: 1fr; }
+      .resumen-dia-head { flex-direction: column; align-items: stretch; }
+    }
+
+
+    .resumen-toggle-card {
+      overflow: hidden;
+    }
+
+    .resumen-toggle-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .resumen-toggle-head h2 {
+      margin: 0;
+    }
+
+    .resumen-toggle-btn {
+      background: #111;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .resumen-toggle-body {
+      display: none;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .resumen-toggle-body.active {
+      display: block;
+    }
+
+    .resumen-produccion-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .resumen-produccion-box {
+      background: #fff8e8;
+      border: 1px solid #f0d28a;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .resumen-produccion-box span {
+      display: block;
+      color: #7a5300;
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .resumen-produccion-box strong {
+      color: var(--rojo);
+      font-size: 28px;
+    }
+
+    .resumen-dia-note {
+      margin-top: 10px;
+      color: #666;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 860px) {
+      .resumen-produccion-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .resumen-produccion-grid { grid-template-columns: 1fr; }
+      .resumen-toggle-head { flex-direction: column; align-items: stretch; }
+    }
+
     .pedido {
       background: white;
       border-radius: 18px;
@@ -337,41 +481,92 @@
         </div>
       </div>
 
-      <div class="stats">
-        <div class="stat">
-          <span>Total del día</span>
-          <strong id="totalDia">$0</strong>
+
+      <div class="card resumen-toggle-card">
+        <div class="resumen-toggle-head" onclick="toggleResumenFinanciero()">
+          <div>
+            <h2>💰 Resumen financiero</h2>
+            <div class="muted">Ventas, pedidos, ticket promedio, promos e ingredientes extra.</div>
+          </div>
+          <button type="button" class="resumen-toggle-btn">Ver / ocultar</button>
         </div>
-        <div class="stat">
-          <span>Total semanal</span>
-          <strong id="totalSemana">$0</strong>
-        </div>
-        <div class="stat">
-          <span>Total mensual</span>
-          <strong id="totalMes">$0</strong>
-        </div>
-        <div class="stat">
-          <span>Acumulado total</span>
-          <strong id="totalAcumulado">$0</strong>
+
+        <div id="resumenFinancieroBody" class="resumen-toggle-body">
+          <div class="stats">
+            <div class="stat">
+              <span>Total del día</span>
+              <strong id="totalDia">$0</strong>
+            </div>
+            <div class="stat">
+              <span>Total semanal</span>
+              <strong id="totalSemana">$0</strong>
+            </div>
+            <div class="stat">
+              <span>Total mensual</span>
+              <strong id="totalMes">$0</strong>
+            </div>
+            <div class="stat">
+              <span>Acumulado total</span>
+              <strong id="totalAcumulado">$0</strong>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <span>Pedidos del día</span>
+              <strong id="cantidadDia">0</strong>
+            </div>
+            <div class="stat">
+              <span>Ticket promedio</span>
+              <strong id="ticketPromedio">$0</strong>
+            </div>
+            <div class="stat">
+              <span>Promo más vendida</span>
+              <strong id="promoMasVendida">-</strong>
+            </div>
+            <div class="stat">
+              <span>Ingredientes extra</span>
+              <strong id="extrasTotal">$0</strong>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="stats">
-        <div class="stat">
-          <span>Pedidos del día</span>
-          <strong id="cantidadDia">0</strong>
+      <div class="card resumen-toggle-card">
+        <div class="resumen-toggle-head" onclick="toggleResumenProduccion()">
+          <div>
+            <h2>📊 Resumen de producción</h2>
+            <div class="muted">Rolls, piezas, hand rolls y sushi burgers realizados en la fecha seleccionada.</div>
+          </div>
+          <button type="button" class="resumen-toggle-btn">Ver / ocultar</button>
         </div>
-        <div class="stat">
-          <span>Ticket promedio</span>
-          <strong id="ticketPromedio">$0</strong>
-        </div>
-        <div class="stat">
-          <span>Promo más vendida</span>
-          <strong id="promoMasVendida">-</strong>
-        </div>
-        <div class="stat">
-          <span>Ingredientes extra</span>
-          <strong id="extrasTotal">$0</strong>
+
+        <div id="resumenProduccionBody" class="resumen-toggle-body">
+          <div class="resumen-produccion-grid">
+            <div class="resumen-produccion-box">
+              <span>Rolls preparados</span>
+              <strong id="resumenRolls">0</strong>
+            </div>
+
+            <div class="resumen-produccion-box">
+              <span>Piezas hechas</span>
+              <strong id="resumenPiezas">0</strong>
+            </div>
+
+            <div class="resumen-produccion-box">
+              <span>Hand rolls</span>
+              <strong id="resumenHandrolls">0</strong>
+            </div>
+
+            <div class="resumen-produccion-box">
+              <span>Sushi burgers</span>
+              <strong id="resumenSushiburgers">0</strong>
+            </div>
+          </div>
+
+          <div class="resumen-dia-note">
+            Se considera 1 roll = 10 piezas. Hand Rolls y Sushi Burgers se cuentan aparte.
+          </div>
         </div>
       </div>
 
@@ -534,6 +729,106 @@
       )).join("");
     }
 
+
+
+    window.toggleResumenFinanciero = function toggleResumenFinanciero() {
+      const body = document.getElementById("resumenFinancieroBody");
+      if (body) body.classList.toggle("active");
+    };
+
+    window.toggleResumenProduccion = function toggleResumenProduccion() {
+      const body = document.getElementById("resumenProduccionBody");
+      if (body) body.classList.toggle("active");
+    };
+
+    function esHandrollProducto(prod) {
+      const nombre = String(prod?.nombre || "").toLowerCase();
+      const categoria = String(prod?.categoria || "").toLowerCase();
+      const piezas = String(prod?.piezas || "").toLowerCase();
+
+      return categoria === "handroll" ||
+        nombre.includes("hand roll") ||
+        nombre.includes("handroll") ||
+        piezas.includes("hand roll");
+    }
+
+    function esSushiburgerProducto(prod) {
+      const nombre = String(prod?.nombre || "").toLowerCase();
+      const categoria = String(prod?.categoria || "").toLowerCase();
+      const piezas = String(prod?.piezas || "").toLowerCase();
+
+      return categoria === "sushiburger" ||
+        nombre.includes("sushi burger") ||
+        nombre.includes("sushiburger") ||
+        piezas.includes("sushi burger") ||
+        piezas.includes("sushi burgers");
+    }
+
+    function esRollContableComoPiezas(prod, roll) {
+      const nombreProducto = String(prod?.nombre || "").toLowerCase();
+      const categoria = String(prod?.categoria || "").toLowerCase();
+      const piezasProducto = String(prod?.piezas || "").toLowerCase();
+      const nombreRoll = String(roll?.nombre || "").toLowerCase();
+
+      if (categoria === "handroll" || categoria === "sushiburger") return false;
+      if (nombreProducto.includes("hand roll") || nombreProducto.includes("sushi burger")) return false;
+      if (piezasProducto.includes("hand roll") || piezasProducto.includes("sushi burger")) return false;
+      if (nombreRoll.includes("hand roll") || nombreRoll.includes("sushi burger")) return false;
+
+      return true;
+    }
+
+    function calcularResumenProduccionDia(pedidos) {
+      let rolls = 0;
+      let piezas = 0;
+      let handrolls = 0;
+      let sushiburgers = 0;
+
+      pedidos.forEach(pedido => {
+        (pedido.productos || []).forEach(prod => {
+          const cantidad = Number(prod.cantidad || 1);
+          const detalleRolls = prod.detalleRolls || [];
+
+          if (esHandrollProducto(prod)) {
+            handrolls += cantidad;
+            return;
+          }
+
+          if (esSushiburgerProducto(prod)) {
+            const cantidadPorPiezas = String(prod.piezas || "").includes("2") ? 2 : 1;
+            sushiburgers += cantidad * cantidadPorPiezas;
+            return;
+          }
+
+          if (detalleRolls.length) {
+            detalleRolls.forEach(roll => {
+              if (esRollContableComoPiezas(prod, roll)) {
+                rolls += 1;
+                piezas += 10;
+              }
+            });
+          }
+        });
+      });
+
+      return { rolls, piezas, handrolls, sushiburgers };
+    }
+
+    function actualizarResumenDia(pedidosDia) {
+      const resumen = calcularResumenProduccionDia(pedidosDia);
+
+      const rolls = document.getElementById("resumenRolls");
+      const piezas = document.getElementById("resumenPiezas");
+      const handrolls = document.getElementById("resumenHandrolls");
+      const sushiburgers = document.getElementById("resumenSushiburgers");
+
+      if (rolls) rolls.textContent = resumen.rolls;
+      if (piezas) piezas.textContent = resumen.piezas;
+      if (handrolls) handrolls.textContent = resumen.handrolls;
+      if (sushiburgers) sushiburgers.textContent = resumen.sushiburgers;
+    }
+
+
     function actualizarAnalisis(pedidosDia) {
       const fechaSeleccionada = document.getElementById("fecha").value;
       const semanaInicio = inicioSemanaLunes(fechaSeleccionada);
@@ -565,6 +860,7 @@
       document.getElementById("ticketPromedio").textContent = formatCLP(ticketPromedio);
       document.getElementById("promoMasVendida").textContent = promoMasVendida;
       document.getElementById("extrasTotal").textContent = formatCLP(calcularExtras(pedidosDia));
+      actualizarResumenDia(pedidosDia);
 
       renderTopLista("topPromos", contarPromos(pedidosDia));
       renderTopLista("topIngredientes", contarIngredientes(pedidosDia));
