@@ -93,19 +93,21 @@
     }
 
 
-    .menu-cerrado-aviso {
-      display: none;
-      max-width: 760px;
-      margin: 22px auto 0;
-      padding: 20px;
-      border-radius: var(--radio);
-      background: #fff1f1;
-      border: 2px solid rgba(214,40,40,.28);
-      box-shadow: var(--sombra);
-      color: var(--rojo);
-      text-align: center;
-      font-weight: 900;
-    }
+.menu-cerrado-aviso {
+  display: none;
+  max-width: 760px;
+  margin: 40px auto;
+  padding: 35px 25px;
+  border-radius: 28px;
+  background: linear-gradient(
+    135deg,
+    rgba(214,40,40,.08),
+    rgba(255,255,255,.95)
+  );
+  border: 2px solid rgba(214,40,40,.18);
+  box-shadow: 0 12px 30px rgba(0,0,0,.12);
+  text-align: center;
+}
 
     .menu-cerrado-aviso.active {
       display: block;
@@ -1010,10 +1012,24 @@
     </div>
   </header>
 
-  <section id="menuCerradoAviso" class="menu-cerrado-aviso">
-    <h2>🚫 Menú digital cerrado</h2>
-    <p id="menuCerradoMensaje">No estamos recibiendo pedidos en este momento.</p>
-  </section>
+<section id="menuCerradoAviso" class="menu-cerrado-aviso">
+  <div style="font-size:60px;margin-bottom:10px;">🍣</div>
+
+  <h2>Menú temporalmente cerrado</h2>
+
+  <p id="menuCerradoMensaje">
+    En este momento no estamos recibiendo pedidos.
+  </p>
+
+  <div style="
+    margin-top:18px;
+    color:#666;
+    font-weight:700;
+  ">
+    Te invitamos a volver más tarde.<br>
+    ¡Gracias por preferir Sushi Ange! ❤️
+  </div>
+</section>
 
   <main>
     <div class="section-title">
