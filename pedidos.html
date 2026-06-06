@@ -166,6 +166,26 @@
       font-weight: 900;
     }
 
+    .estado-recibido {
+      display: inline-block;
+      margin-top: 6px;
+      background: #f4c542;
+      color: #333;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .btn-recibido {
+      background: linear-gradient(135deg, #FFD54F, #F9A825);
+      color: #333;
+      padding: 8px 10px;
+      font-size: 14px;
+      white-space: nowrap;
+      font-weight: 900;
+    }
+
     .footer-pedido-accion {
       display:flex;
       justify-content:flex-end;
@@ -1152,7 +1172,29 @@
 
     function mensajePedidoListo(pedido) {
       const nombre = pedido.cliente || "";
-      const texto = `Hola ${nombre}, tu pedido de Sushi Ange ya está listo 🍣✅`;
+
+      const texto = `Hola ${nombre} 👋
+
+Tu pedido ya está listo para retirar 🍣✅
+
+Gracias por preferir Sushi Ange ❤️`;
+
+      return encodeURIComponent(texto);
+    }
+
+    function mensajePedidoRecibido(pedido) {
+      const nombre = pedido.cliente || "";
+
+      const texto = `Hola ${nombre} 👋
+
+Tu pedido fue recibido correctamente 🍣✅
+
+⏰ Recuerda que el horario de retiro es una estimación y puede variar según la carga de trabajo.
+
+Te avisaremos cuando esté listo.
+
+Gracias por preferir Sushi Ange ❤️`;
+
       return encodeURIComponent(texto);
     }
 
@@ -1193,13 +1235,16 @@
               <div class="muted">Hora: ${hora || "No registrada"} · Estado: ${pedido.estado || "nuevo"}</div>
               <div class="horario-resumen">⏰ ${textoHorarioRetiro(pedido)}<br>${textoTiempoPreparacion(pedido)}</div>
               ${terminado ? `<div class="estado-terminado">✅ PEDIDO TERMINADO</div>` : ""}
+              ${pedido.estado === "recibido" ? `<div class="estado-recibido">📩 PEDIDO RECIBIDO</div>` : ""}
             </div>
             <div class="pedido-actions">
               <div class="pedido-total">${formatCLP(pedido.total)}</div>
-              ${!terminado
-                ? `<button class="btn-terminado" onclick="finalizarYAvisar('${pedido.id}')">✅ Finalizar</button>`
-                : ``
-              }
+              ${!terminado ? `
+                ${pedido.estado !== "recibido" ? `
+                  <button class="btn-recibido" onclick="marcarRecibido('${pedido.id}')">📩 Recibido</button>
+                ` : ``}
+                <button class="btn-terminado" onclick="finalizarYAvisar('${pedido.id}')">✅ Finalizar</button>
+              ` : ``}
             </div>
           </div>
 
@@ -1319,6 +1364,36 @@ ${prod.obs ? `
 
       actualizarBotonesSeleccion();
       renderPedidosDia();
+    };
+
+
+    window.marcarRecibido = async function marcarRecibido(id) {
+      const pedido = pedidosGlobales.find(p => p.id === id);
+
+      if (!pedido) {
+        alert("No se encontró el pedido.");
+        return;
+      }
+
+      const telefono = telefonoWhatsAppPedido(pedido);
+
+      try {
+        await updateDoc(doc(db, "pedidos", id), {
+          estado: "recibido"
+        });
+
+        cargarPedidos();
+
+        if (telefono) {
+          window.location.href = `https://wa.me/${telefono}?text=${mensajePedidoRecibido(pedido)}`;
+        } else {
+          alert("Pedido marcado como recibido, pero no hay WhatsApp del cliente guardado.");
+        }
+
+      } catch (error) {
+        console.error(error);
+        alert("No se pudo marcar como recibido. Revisa que las reglas de Firestore permitan update.");
+      }
     };
 
 
