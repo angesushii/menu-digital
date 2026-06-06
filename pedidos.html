@@ -1021,6 +1021,23 @@
       return encodeURIComponent(texto);
     }
 
+
+    function cantidadProducto(prod) {
+      return Number(prod?.cantidad || 1);
+    }
+
+    function textoCantidadProducto(prod) {
+      const cantidad = cantidadProducto(prod);
+      return cantidad > 1 ? ` · Cantidad: ${cantidad}` : "";
+    }
+
+    function textoCantidadDestacada(prod) {
+      const cantidad = cantidadProducto(prod);
+      return cantidad > 1
+        ? `<div class="muted"><strong>Cantidad: ${cantidad}</strong></div>`
+        : "";
+    }
+
     function renderPedido(pedido) {
       const productos = pedido.productos || [];
       const hora = obtenerHoraLocalPedido(pedido);
@@ -1054,7 +1071,8 @@
           ${productos.map(prod => `
             <div class="producto">
               <strong>${prod.nombre || "Producto"}</strong>
-              <div class="muted">${prod.piezas || ""}</div>
+              <div class="muted">${prod.piezas || ""}${textoCantidadProducto(prod)}</div>
+              ${textoCantidadDestacada(prod)}
 
               ${(prod.detalleRolls || []).map(roll => `
                 <div class="detalle-roll">🍣 ${roll.nombre}: ${(roll.ingredientes || []).map(limpiarIngrediente).join(", ")}</div>
