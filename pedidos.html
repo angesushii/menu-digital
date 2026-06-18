@@ -1248,31 +1248,43 @@ Gracias por preferir Sushi Ange ❤️`;
             </div>
           </div>
 
-          ${productos.map(prod => `
-            <div class="producto">
-              <strong>${prod.nombre || "Producto"}</strong>
-              <div class="muted">${prod.piezas || ""}${textoCantidadProducto(prod)}</div>
-              ${textoCantidadDestacada(prod)}
+          ${productos.map(prod => {
+            const esBebida = prod.tipo === "bebida";
 
-              ${(prod.detalleRolls || []).map(roll => `
-                <div class="detalle-roll">🍣 ${roll.nombre}: ${(roll.ingredientes || []).map(limpiarIngrediente).join(", ")}</div>
-              `).join("")}
+            return `
+              <div class="producto">
+                <strong>${esBebida ? "🥤 " : ""}${prod.nombre || "Producto"}</strong>
 
-              ${prod.extraSalmon ? `<div class="muted">Adicional salmón: ${formatCLP(prod.extraSalmon)}</div>` : ""}
-              ${prod.extraCuarto ? `<div class="muted">Ingrediente extra: ${formatCLP(prod.extraCuarto)}</div>` : ""}
-              ${prod.observaciones ? `
-  <div class="obs-destacada">
-    📝 ${prod.observaciones}
-  </div>
-` : ""}
+                ${esBebida ? `
+                  <div class="muted"><strong>Cantidad: ${cantidadProducto(prod)}</strong></div>
+                  <div class="muted">Formato: ${prod.piezas || "Bebida"}</div>
+                  <div class="muted">Subtotal: ${formatCLP(prod.precioFinal || 0)}</div>
+                ` : `
+                  <div class="muted">${prod.piezas || ""}${textoCantidadProducto(prod)}</div>
+                  ${textoCantidadDestacada(prod)}
 
-${prod.obs ? `
-  <div class="obs-destacada">
-    📝 ${prod.obs}
-  </div>
-` : ""}
-            </div>
-          `).join("")}
+                  ${(prod.detalleRolls || []).map(roll => `
+                    <div class="detalle-roll">🍣 ${roll.nombre}: ${(roll.ingredientes || []).map(limpiarIngrediente).join(", ")}</div>
+                  `).join("")}
+
+                  ${prod.extraSalmon ? `<div class="muted">Adicional salmón: ${formatCLP(prod.extraSalmon)}</div>` : ""}
+                  ${prod.extraCuarto ? `<div class="muted">Ingrediente extra: ${formatCLP(prod.extraCuarto)}</div>` : ""}
+                `}
+
+                ${prod.observaciones ? `
+    <div class="obs-destacada">
+      📝 ${prod.observaciones}
+    </div>
+  ` : ""}
+
+  ${prod.obs ? `
+    <div class="obs-destacada">
+      📝 ${prod.obs}
+    </div>
+  ` : ""}
+              </div>
+            `;
+          }).join("")}
 
           <div class="producto">
             <strong>Datos finales</strong>
