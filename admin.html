@@ -282,6 +282,28 @@
     }
 
 
+
+    .resumen-bebidas-box {
+      background: #eef8ff;
+      border: 1px solid #9ed8ff;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .resumen-bebidas-box span {
+      display: block;
+      color: #075985;
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .resumen-bebidas-box strong {
+      color: #0369a1;
+      font-size: 28px;
+    }
+
+
     .resumen-toggle-card {
       overflow: hidden;
     }
@@ -533,6 +555,54 @@
       </div>
 
       <div class="card resumen-toggle-card">
+        <div class="resumen-toggle-head" onclick="toggleResumenBebidas()">
+          <div>
+            <h2>🥤 Resumen financiero de bebidas</h2>
+            <div class="muted">Dinero de bebidas separado del resumen de sushi.</div>
+          </div>
+          <button type="button" class="resumen-toggle-btn">Ver / ocultar</button>
+        </div>
+
+        <div id="resumenBebidasBody" class="resumen-toggle-body">
+          <div class="resumen-produccion-grid">
+            <div class="resumen-bebidas-box">
+              <span>Bebidas del día</span>
+              <strong id="bebidasTotalDia">$0</strong>
+            </div>
+
+            <div class="resumen-bebidas-box">
+              <span>Bebidas semanal</span>
+              <strong id="bebidasTotalSemana">$0</strong>
+            </div>
+
+            <div class="resumen-bebidas-box">
+              <span>Bebidas mensual</span>
+              <strong id="bebidasTotalMes">$0</strong>
+            </div>
+
+            <div class="resumen-bebidas-box">
+              <span>Bebidas acumulado</span>
+              <strong id="bebidasTotalAcumulado">$0</strong>
+            </div>
+
+            <div class="resumen-bebidas-box">
+              <span>Unidades del día</span>
+              <strong id="bebidasUnidadesDia">0</strong>
+            </div>
+
+            <div class="resumen-bebidas-box">
+              <span>Bebida más vendida</span>
+              <strong id="bebidaMasVendida">-</strong>
+            </div>
+          </div>
+
+          <div class="resumen-dia-note">
+            Estos montos corresponden sólo a bebidas y no se suman al resumen financiero principal.
+          </div>
+        </div>
+      </div>
+
+      <div class="card resumen-toggle-card">
         <div class="resumen-toggle-head" onclick="toggleResumenProduccion()">
           <div>
             <h2>📊 Resumen de producción</h2>
@@ -677,16 +747,70 @@
       return fecha >= desde && fecha <= hasta;
     }
 
+    function esProductoBebida(prod) {
+      return prod?.tipo === "bebida" || String(prod?.categoria || "").toLowerCase() === "bebida";
+    }
+
+    function totalProducto(prod) {
+      return Number(prod?.precioFinal || 0);
+    }
+
+    function descuentoProducto(prod) {
+      return Number(prod?.descuentoPromoA || 0);
+    }
+
+    function totalSushiPedido(pedido) {
+      return (pedido.productos || []).reduce((acc, prod) => {
+        if (esProductoBebida(prod)) return acc;
+        return acc + totalProducto(prod) - descuentoProducto(prod);
+      }, 0);
+    }
+
+    function totalBebidasPedido(pedido) {
+      return (pedido.productos || []).reduce((acc, prod) => {
+        if (!esProductoBebida(prod)) return acc;
+        return acc + totalProducto(prod);
+      }, 0);
+    }
+
     function sumarPedidos(pedidos) {
-      return pedidos.reduce((acc, p) => acc + Number(p.total || 0), 0);
+      return pedidos.reduce((acc, p) => acc + totalSushiPedido(p), 0);
+    }
+
+    function sumarBebidas(pedidos) {
+      return pedidos.reduce((acc, p) => acc + totalBebidasPedido(p), 0);
+    }
+
+    function contarUnidadesBebidas(pedidos) {
+      return pedidos.reduce((acc, pedido) => {
+        return acc + (pedido.productos || []).reduce((sub, prod) => {
+          if (!esProductoBebida(prod)) return sub;
+          return sub + Number(prod.cantidad || 1);
+        }, 0);
+      }, 0);
+    }
+
+    function contarBebidas(pedidos) {
+      const conteo = {};
+      pedidos.forEach(pedido => {
+        (pedido.productos || []).forEach(prod => {
+          if (!esProductoBebida(prod)) return;
+
+          const nombre = prod.nombre || "Bebida";
+          conteo[nombre] = (conteo[nombre] || 0) + Number(prod.cantidad || 1);
+        });
+      });
+      return Object.entries(conteo).sort((a, b) => b[1] - a[1]);
     }
 
     function contarPromos(pedidos) {
       const conteo = {};
       pedidos.forEach(pedido => {
         (pedido.productos || []).forEach(prod => {
+          if (esProductoBebida(prod)) return;
+
           const nombre = prod.nombre || "Sin nombre";
-          conteo[nombre] = (conteo[nombre] || 0) + 1;
+          conteo[nombre] = (conteo[nombre] || 0) + Number(prod.cantidad || 1);
         });
       });
       return Object.entries(conteo).sort((a, b) => b[1] - a[1]);
@@ -696,6 +820,8 @@
       const conteo = {};
       pedidos.forEach(pedido => {
         (pedido.productos || []).forEach(prod => {
+          if (esProductoBebida(prod)) return;
+
           (prod.detalleRolls || []).forEach(roll => {
             (roll.ingredientes || []).forEach(ing => {
               const limpio = limpiarIngrediente(ing);
@@ -711,6 +837,8 @@
       let total = 0;
       pedidos.forEach(pedido => {
         (pedido.productos || []).forEach(prod => {
+          if (esProductoBebida(prod)) return;
+
           total += Number(prod.extraSalmon || 0);
           total += Number(prod.extraCuarto || 0);
         });
@@ -738,6 +866,11 @@
 
     window.toggleResumenProduccion = function toggleResumenProduccion() {
       const body = document.getElementById("resumenProduccionBody");
+      if (body) body.classList.toggle("active");
+    };
+
+    window.toggleResumenBebidas = function toggleResumenBebidas() {
+      const body = document.getElementById("resumenBebidasBody");
       if (body) body.classList.toggle("active");
     };
 
@@ -848,7 +981,18 @@
       const totalSemana = sumarPedidos(pedidosSemana);
       const totalMes = sumarPedidos(pedidosMes);
       const totalAcumulado = sumarPedidos(pedidosGlobales);
-      const ticketPromedio = pedidosDia.length ? Math.round(totalDia / pedidosDia.length) : 0;
+
+      const bebidasDia = sumarBebidas(pedidosDia);
+      const bebidasSemana = sumarBebidas(pedidosSemana);
+      const bebidasMes = sumarBebidas(pedidosMes);
+      const bebidasAcumulado = sumarBebidas(pedidosGlobales);
+      const bebidasUnidadesDia = contarUnidadesBebidas(pedidosDia);
+      const bebidasRank = contarBebidas(pedidosDia);
+      const bebidaMasVendidaTexto = bebidasRank.length ? `${bebidasRank[0][0]} (${bebidasRank[0][1]})` : "-";
+
+      const pedidosConSushiDia = pedidosDia.filter(p => totalSushiPedido(p) > 0);
+      const ticketPromedio = pedidosConSushiDia.length ? Math.round(totalDia / pedidosConSushiDia.length) : 0;
+
       const promos = contarPromos(pedidosDia);
       const promoMasVendida = promos.length ? `${promos[0][0]} (${promos[0][1]})` : "-";
 
@@ -860,6 +1004,14 @@
       document.getElementById("ticketPromedio").textContent = formatCLP(ticketPromedio);
       document.getElementById("promoMasVendida").textContent = promoMasVendida;
       document.getElementById("extrasTotal").textContent = formatCLP(calcularExtras(pedidosDia));
+
+      document.getElementById("bebidasTotalDia").textContent = formatCLP(bebidasDia);
+      document.getElementById("bebidasTotalSemana").textContent = formatCLP(bebidasSemana);
+      document.getElementById("bebidasTotalMes").textContent = formatCLP(bebidasMes);
+      document.getElementById("bebidasTotalAcumulado").textContent = formatCLP(bebidasAcumulado);
+      document.getElementById("bebidasUnidadesDia").textContent = bebidasUnidadesDia;
+      document.getElementById("bebidaMasVendida").textContent = bebidaMasVendidaTexto;
+
       actualizarResumenDia(pedidosDia);
 
       renderTopLista("topPromos", contarPromos(pedidosDia));
@@ -885,25 +1037,41 @@
             </div>
             <div class="pedido-actions">
               <div class="pedido-total">${formatCLP(pedido.total)}</div>
+              <div class="muted" style="text-align:right;">
+                Sushi: ${formatCLP(totalSushiPedido(pedido))}<br>
+                Bebidas: ${formatCLP(totalBebidasPedido(pedido))}
+              </div>
               <button class="btn-delete" onclick="eliminarPedido('${pedido.id}')">🗑️ Eliminar</button>
             </div>
           </div>
 
-          ${productos.map(prod => `
-            <div class="producto">
-              <strong>${prod.nombre || "Producto"}</strong>
-              <div class="muted">${prod.piezas || ""}</div>
+          ${productos.map(prod => {
+            const esBebida = esProductoBebida(prod);
 
-              ${(prod.detalleRolls || []).map(roll => `
-                <div class="detalle-roll">🍣 ${roll.nombre}: ${(roll.ingredientes || []).map(limpiarIngrediente).join(", ")}</div>
-              `).join("")}
+            return `
+              <div class="producto">
+                <strong>${esBebida ? "🥤 " : ""}${prod.nombre || "Producto"}</strong>
 
-              ${prod.extraSalmon ? `<div class="muted">Adicional salmón: ${formatCLP(prod.extraSalmon)}</div>` : ""}
-              ${prod.extraCuarto ? `<div class="muted">Ingrediente 4 extra: ${formatCLP(prod.extraCuarto)}</div>` : ""}
-              ${prod.observaciones ? `<div class="muted">Obs: ${prod.observaciones}</div>` : ""}
-              ${prod.obs ? `<div class="muted">Obs: ${prod.obs}</div>` : ""}
-            </div>
-          `).join("")}
+                ${esBebida ? `
+                  <div class="muted"><strong>Cantidad: ${Number(prod.cantidad || 1)}</strong></div>
+                  <div class="muted">Formato: ${prod.piezas || "Bebida"}</div>
+                  <div class="muted">Subtotal bebidas: ${formatCLP(prod.precioFinal || 0)}</div>
+                ` : `
+                  <div class="muted">${prod.piezas || ""}${Number(prod.cantidad || 1) > 1 ? ` · Cantidad: ${Number(prod.cantidad || 1)}` : ""}</div>
+
+                  ${(prod.detalleRolls || []).map(roll => `
+                    <div class="detalle-roll">🍣 ${roll.nombre}: ${(roll.ingredientes || []).map(limpiarIngrediente).join(", ")}</div>
+                  `).join("")}
+
+                  ${prod.extraSalmon ? `<div class="muted">Adicional salmón: ${formatCLP(prod.extraSalmon)}</div>` : ""}
+                  ${prod.extraCuarto ? `<div class="muted">Ingrediente 4 extra: ${formatCLP(prod.extraCuarto)}</div>` : ""}
+                `}
+
+                ${prod.observaciones ? `<div class="muted">Obs: ${prod.observaciones}</div>` : ""}
+                ${prod.obs ? `<div class="muted">Obs: ${prod.obs}</div>` : ""}
+              </div>
+            `;
+          }).join("")}
         </div>
       `;
     }
