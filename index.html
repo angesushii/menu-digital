@@ -592,6 +592,112 @@
       color: var(--rojo);
     }
 
+
+    .bebidas-section.hidden { display: none; }
+
+    .bebidas-toggle-card { overflow: hidden; padding: 0; }
+
+    .bebidas-toggle-head {
+      background: linear-gradient(135deg, rgba(17,17,17,.94), rgba(45,45,45,.90));
+      color: white;
+      padding: 16px;
+      min-height: 105px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .bebidas-toggle-head h2 {
+      margin: 0;
+      font-size: 25px;
+      text-transform: uppercase;
+    }
+
+    .bebidas-toggle-head p {
+      margin: 8px 0 0;
+      color: #f1f1f1;
+      font-size: 14px;
+    }
+
+    .bebidas-toggle-body { padding: 14px; }
+
+    .show-bebidas-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro));
+      color: white;
+      border: none;
+      border-radius: 18px;
+      padding: 16px 18px;
+      font-size: 18px;
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin: 0;
+      box-shadow: 0 8px 18px rgba(214,40,40,.25);
+    }
+
+    .bebidas-card { padding: 16px; }
+
+    .bebida-select-box {
+      border: 1px solid var(--gris-2);
+      background: linear-gradient(180deg, #ffffff, #fbfbfb);
+      border-radius: 20px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    .bebida-select-box h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      color: var(--negro);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bebida-select-box h3::before {
+      content: "🥤";
+      background: #fff1f1;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+    }
+
+    .bebida-formato-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .bebida-formato-line h3 {
+      margin: 0;
+    }
+
+    .bebida-formato-precio {
+      background: var(--rojo);
+      color: white;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .bebida-stock-note {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #666;
+      font-weight: 800;
+    }
+
+    .bebida-stock-note.agotada { color: var(--rojo); }
+
+
     .cart-panel {
       background: rgba(255,255,255,.96);
       border-radius: var(--radio);
@@ -677,6 +783,59 @@
       background: #191919;
       color: white;
       margin-top: 12px;
+    }
+
+
+
+    .bebidas-final-card {
+      display: none;
+      background: #fffafa;
+      border: 1px solid #ffd0d0;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .bebidas-final-card.active {
+      display: block;
+    }
+
+    .bebidas-final-card > label {
+      margin-top: 0;
+    }
+
+    .bebidas-final-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .bebidas-final-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid #ffd0d0;
+      border-radius: 12px;
+      padding: 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .bebidas-final-option input {
+      width: auto;
+      margin: 0;
+      transform: scale(1.1);
+    }
+
+    .bebidas-final-panel {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .bebidas-final-panel.active {
+      display: block;
     }
 
 
@@ -1095,6 +1254,30 @@
       <div id="promoGrid" class="promo-grid"></div>
     </section>
 
+
+    <section class="card bebidas-toggle-card">
+      <div class="bebidas-toggle-head">
+        <h2>Bebidas</h2>
+        <p>Agrega bebidas a tu pedido de forma rápida.</p>
+      </div>
+      <div class="bebidas-toggle-body">
+        <button id="toggleBebidasBtn" class="show-bebidas-btn" onclick="toggleBebidas()">🥤 Ver bebidas 🥤</button>
+      </div>
+    </section>
+
+    <section id="bebidasSection" class="bebidas-section hidden">
+      <div class="section-title">
+        <span>🥤</span>
+        <h2>Bebidas</h2>
+      </div>
+
+      <section class="card bebidas-card">
+        <div id="bebidasLista">
+          <div class="small">Cargando bebidas...</div>
+        </div>
+      </section>
+    </section>
+
     <div id="configArea"></div>
 
     <section class="cart-panel">
@@ -1105,6 +1288,28 @@
     <section id="finalPanel" class="final-panel">
       <h2>✅ Último paso</h2>
       <p class="small">Elige horario, salsas, palillos y observaciones finales.</p>
+
+      <div id="bebidasFinalCard" class="bebidas-final-card">
+        <label>🥤 ¿Quieres agregar bebidas?</label>
+
+        <div class="bebidas-final-options">
+          <label class="bebidas-final-option">
+            <input type="radio" name="quiereBebidasFinal" value="No" checked onchange="toggleBebidasFinal()">
+            No
+          </label>
+
+          <label class="bebidas-final-option">
+            <input type="radio" name="quiereBebidasFinal" value="Si" onchange="toggleBebidasFinal()">
+            Sí
+          </label>
+        </div>
+
+        <div id="bebidasFinalPanel" class="bebidas-final-panel">
+          <div id="bebidasListaFinal">
+            <div class="small">Cargando bebidas...</div>
+          </div>
+        </div>
+      </div>
 
       <div class="horario-card">
         <label>⏰ Horario de retiro</label>
@@ -1384,6 +1589,303 @@
       }, 5000);
     }
 
+
+    let bebidas = [];
+    let bebidasCargadas = false;
+
+    function esLataCocaCola(bebida) {
+      const nombre = String(bebida?.nombre || "").toLowerCase();
+      return nombre.includes("coca");
+    }
+
+    function gruposBebidasCarta() {
+      return [
+        {
+          id: "lata-ccu-350",
+          titulo: "Lata CCU 350cc",
+          precioFallback: 1000,
+          filtro: b => b.categoria === "Lata 350 ml" && !esLataCocaCola(b)
+        },
+        {
+          id: "lata-coca-350",
+          titulo: "Lata Coca-Cola 350cc",
+          precioFallback: 1200,
+          filtro: b => b.categoria === "Lata 350 ml" && esLataCocaCola(b)
+        },
+        {
+          id: "botella-591",
+          titulo: "Botella 591cc",
+          precioFallback: 1500,
+          filtro: b => b.categoria === "Botella 591 ml"
+        }
+      ];
+    }
+
+    function precioGrupoBebida(grupo) {
+      const items = bebidas.filter(grupo.filtro);
+      const conPrecio = items.find(b => Number(b.precio || 0) > 0);
+      return Number(conPrecio?.precio || grupo.precioFallback || 0);
+    }
+
+    function nombreCategoriaBebida(categoria) {
+      if (categoria === "Lata 350 ml") return "Lata 350cc";
+      if (categoria === "Botella 591 ml") return "Botella 591cc";
+      return categoria || "Bebidas";
+    }
+
+    function getIdCategoriaBebida(categoria) {
+      return String(categoria || "").replace(/\s+/g, "-");
+    }
+
+    function bebidaDisponible(bebida) {
+      return bebida && bebida.activa !== false && Number(bebida.stock || 0) > 0;
+    }
+
+    function toggleBebidas() {
+      const section = document.getElementById("bebidasSection");
+      const btn = document.getElementById("toggleBebidasBtn");
+
+      if (!section || !btn) return;
+
+      section.classList.toggle("hidden");
+
+      if (section.classList.contains("hidden")) {
+        btn.innerHTML = "🥤 Ver bebidas 🥤";
+      } else {
+        btn.innerHTML = "❌ Ocultar bebidas";
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function opcionesBebidaPorGrupo(grupo) {
+      const items = bebidas.filter(grupo.filtro);
+
+      if (!bebidasCargadas) return `<option value="">Cargando bebidas...</option>`;
+      if (!items.length) return `<option value="">No hay bebidas configuradas</option>`;
+
+      return `<option value="">Seleccionar bebida</option>` + items.map(bebida => {
+        const disponible = bebidaDisponible(bebida);
+        const disabled = disponible ? "" : "disabled";
+        const texto = disponible ? bebida.nombre : `❌ ${bebida.nombre} (sin stock)`;
+        return `<option value="${bebida.id}" ${disabled}>${texto}</option>`;
+      }).join("");
+    }
+
+    function htmlBebidasCarta(sufijo = "") {
+      const grupos = gruposBebidasCarta();
+
+      return grupos.map(grupo => `
+          <div class="bebida-select-box">
+            <div class="bebida-formato-line">
+              <h3>${grupo.titulo}</h3>
+              <span class="bebida-formato-precio">${formatCLP(precioGrupoBebida(grupo))}</span>
+            </div>
+
+            <label>Bebida</label>
+            <select id="bebidaSelect-${grupo.id}${sufijo}" onchange="actualizarVistaBebidaGrupo('${grupo.id}', '${sufijo}')">
+              ${opcionesBebidaPorGrupo(grupo)}
+            </select>
+
+            <div id="bebidaStock-${grupo.id}${sufijo}" class="bebida-stock-note">
+              Selecciona una bebida.
+            </div>
+
+            <button class="add-btn" onclick="agregarBebidaSeleccionadaGrupo('${grupo.id}', '${sufijo}')">
+              🛒 Agregar bebida
+            </button>
+          </div>
+        `).join("");
+    }
+
+    function renderBebidasCarta() {
+      const cont = document.getElementById("bebidasLista");
+      if (cont) {
+        cont.innerHTML = htmlBebidasCarta("");
+        gruposBebidasCarta().forEach(grupo => actualizarVistaBebidaGrupo(grupo.id, ""));
+      }
+
+      const contFinal = document.getElementById("bebidasListaFinal");
+      if (contFinal) {
+        contFinal.innerHTML = htmlBebidasCarta("-final");
+        gruposBebidasCarta().forEach(grupo => actualizarVistaBebidaGrupo(grupo.id, "-final"));
+      }
+    }
+
+    function grupoBebidaPorId(grupoId) {
+      return gruposBebidasCarta().find(g => g.id === grupoId) || null;
+    }
+
+    function bebidaSeleccionadaPorGrupo(grupoId, sufijo = "") {
+      const select = document.getElementById(`bebidaSelect-${grupoId}${sufijo}`);
+      const id = select ? select.value : "";
+      return bebidas.find(b => b.id === id) || null;
+    }
+
+    function actualizarVistaBebidaGrupo(grupoId, sufijo = "") {
+      const bebida = bebidaSeleccionadaPorGrupo(grupoId, sufijo);
+      const stock = document.getElementById(`bebidaStock-${grupoId}${sufijo}`);
+
+      if (!stock) return;
+
+      if (!bebida) {
+        stock.textContent = "Selecciona una bebida.";
+        stock.classList.remove("agotada");
+        return;
+      }
+
+      if (bebidaDisponible(bebida)) {
+        stock.textContent = "Disponible.";
+        stock.classList.remove("agotada");
+      } else {
+        stock.textContent = "Sin stock.";
+        stock.classList.add("agotada");
+      }
+    }
+
+    async function cargarBebidasDesdeFirebase() {
+      const listo = await esperarFirebase();
+
+      if (!listo || !window.getDocs || !window.collection) {
+        bebidas = [];
+        bebidasCargadas = true;
+        renderBebidasCarta();
+        return;
+      }
+
+      try {
+        const snap = await window.getDocs(window.collection(window.db, "bebidas"));
+        bebidas = [];
+
+        snap.forEach(docSnap => {
+          bebidas.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        bebidas.sort((a, b) =>
+          String(a.categoria || "").localeCompare(String(b.categoria || "")) ||
+          String(a.nombre || "").localeCompare(String(b.nombre || ""))
+        );
+      } catch (error) {
+        console.error("No se pudieron cargar las bebidas:", error);
+        bebidas = [];
+      }
+
+      bebidasCargadas = true;
+      renderBebidasCarta();
+    }
+
+    function iniciarEscuchaBebidas() {
+      if (!window.db || !window.collection || !window.onSnapshot) return;
+
+      try {
+        window.onSnapshot(window.collection(window.db, "bebidas"), (snap) => {
+          bebidas = [];
+
+          snap.forEach(docSnap => {
+            bebidas.push({ id: docSnap.id, ...docSnap.data() });
+          });
+
+          bebidas.sort((a, b) =>
+            String(a.categoria || "").localeCompare(String(b.categoria || "")) ||
+            String(a.nombre || "").localeCompare(String(b.nombre || ""))
+          );
+
+          bebidasCargadas = true;
+          renderBebidasCarta();
+          renderCarrito();
+        });
+      } catch (error) {
+        console.error("No se pudo escuchar bebidas:", error);
+      }
+    }
+
+    function carritoTieneBebidas() {
+      return carrito.some(item => item.tipo === "bebida");
+    }
+
+    function actualizarPreguntaBebidasFinal() {
+      const card = document.getElementById("bebidasFinalCard");
+      if (!card) return;
+
+      const mostrar = !carritoTieneBebidas();
+
+      card.classList.toggle("active", mostrar);
+
+      if (!mostrar) {
+        const no = document.querySelector('input[name="quiereBebidasFinal"][value="No"]');
+        const panel = document.getElementById("bebidasFinalPanel");
+
+        if (no) no.checked = true;
+        if (panel) panel.classList.remove("active");
+      }
+    }
+
+    function toggleBebidasFinal() {
+      const quiere = document.querySelector('input[name="quiereBebidasFinal"]:checked')?.value === "Si";
+      const panel = document.getElementById("bebidasFinalPanel");
+
+      if (!panel) return;
+
+      panel.classList.toggle("active", quiere);
+
+      if (quiere) {
+        renderBebidasCarta();
+      }
+    }
+
+    async function agregarBebidaSeleccionadaGrupo(grupoId, sufijo = "") {
+      if (!menuDigitalAbierto()) {
+        alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+        return;
+      }
+
+      const bebida = bebidaSeleccionadaPorGrupo(grupoId, sufijo);
+
+      if (!bebida) {
+        alert("Debes seleccionar una bebida.");
+        return;
+      }
+
+      if (!bebidaDisponible(bebida)) {
+        alert("Esta bebida no está disponible por el momento.");
+        return;
+      }
+
+      const existente = carrito.find(item => item.tipo === "bebida" && item.bebidaId === bebida.id);
+      const stock = Number(bebida.stock || 0);
+
+      if (existente) {
+        if (Number(existente.cantidad || 1) >= stock) {
+          alert("No hay más stock disponible de esta bebida.");
+          return;
+        }
+
+        existente.cantidad = Number(existente.cantidad || 1) + 1;
+        existente.precioUnitario = Number(bebida.precio || 0);
+        existente.precioFinal = existente.precioUnitario * existente.cantidad;
+      } else {
+        const grupo = grupoBebidaPorId(grupoId);
+        const formato = grupo?.titulo || nombreCategoriaBebida(bebida.categoria);
+
+        carrito.push({
+          id: `BEBIDA-${bebida.id}`,
+          tipo: "bebida",
+          categoria: "bebida",
+          bebidaId: bebida.id,
+          nombre: `${bebida.nombre} ${formato}`,
+          piezas: formato,
+          detalleRolls: [],
+          precioBase: Number(bebida.precio || 0),
+          precioUnitario: Number(bebida.precio || 0),
+          precioFinal: Number(bebida.precio || 0),
+          cantidad: 1
+        });
+      }
+
+      renderCarrito();
+      actualizarPreguntaBebidasFinal();
+      await actualizarHorarioSiFinalAbierto();
+      document.querySelector(".cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     let ingredientes = [];
     let ingredientesDisponibles = [];
     let ingredientesCargados = false;
@@ -2225,16 +2727,36 @@ if (descuentoItem > 0) {
 
 
     function puedeCambiarCantidad(item) {
-      return item &&
-        item.tipo === "personalizado" &&
-        (item.categoria === "handroll" || item.categoria === "sushiburger");
+      return item && (
+        (
+          item.tipo === "personalizado" &&
+          (item.categoria === "handroll" || item.categoria === "sushiburger")
+        ) ||
+        item.tipo === "bebida"
+      );
     }
 
     async function actualizarCantidadItem(index, cambio) {
       const item = carrito[index];
       if (!item || !puedeCambiarCantidad(item)) return;
 
-      const nuevaCantidad = Math.max(1, cantidadItem(item) + cambio);
+      let nuevaCantidad = Math.max(1, cantidadItem(item) + cambio);
+
+      if (item.tipo === "bebida") {
+        const bebida = bebidas.find(b => b.id === item.bebidaId);
+        const stock = Number(bebida?.stock || 0);
+
+        if (!bebidaDisponible(bebida)) {
+          alert("Esta bebida ya no está disponible.");
+          return;
+        }
+
+        if (nuevaCantidad > stock) {
+          alert("No hay más stock disponible de esta bebida.");
+          nuevaCantidad = stock;
+        }
+      }
+
       item.cantidad = nuevaCantidad;
 
       renderCarrito();
@@ -2258,6 +2780,8 @@ if (descuentoItem > 0) {
     function editarItem(index) {
       const item = carrito[index];
 
+      if (item.tipo === "bebida") return;
+
       if (item.tipo === "promo") {
         abrirPromo(item.id, item, index);
         return;
@@ -2268,9 +2792,12 @@ if (descuentoItem > 0) {
     }
 
     function agruparCarrito() {
+      const conIndex = carrito.map((item, index) => ({ ...item, index }));
+
       return {
-        personalizados: carrito.map((item, index) => ({ ...item, index })).filter(item => item.tipo === "personalizado"),
-        promos: carrito.map((item, index) => ({ ...item, index })).filter(item => item.tipo === "promo")
+        personalizados: conIndex.filter(item => item.tipo === "personalizado"),
+        promos: conIndex.filter(item => item.tipo === "promo"),
+        bebidas: conIndex.filter(item => item.tipo === "bebida")
       };
     }
 
@@ -2291,6 +2818,7 @@ if (descuentoItem > 0) {
 
       if (carrito.length === 0) {
         cart.innerHTML = '<div class="cart-empty">Aún no has agregado productos.</div>';
+        actualizarPreguntaBebidasFinal();
         return;
       }
 
@@ -2299,6 +2827,7 @@ if (descuentoItem > 0) {
       cart.innerHTML = `
         ${renderGrupoCarrito("Pedido personalizado", grupos.personalizados)}
         ${renderGrupoCarrito("Promociones", grupos.promos)}
+        ${renderGrupoCarrito("Bebidas", grupos.bebidas)}
 
         ${descuentoPromoA > 0 ? `
           <div style="
@@ -2314,6 +2843,8 @@ if (descuentoItem > 0) {
           </div>
         ` : ""}
       `;
+
+      actualizarPreguntaBebidasFinal();
     }
 
     function renderGrupoCarrito(titulo, items) {
@@ -2337,12 +2868,15 @@ if (descuentoItem > 0) {
                       <button class="qty-btn" onclick="actualizarCantidadItem(${item.index}, 1)">+</button>
                     </div>
                   ` : ""}
-                  <button class="edit-btn" onclick="editarItem(${item.index})">Editar</button>
+                  ${item.tipo !== "bebida" ? `<button class="edit-btn" onclick="editarItem(${item.index})">Editar</button>` : ""}
                   <button class="delete-btn" onclick="eliminarItem(${item.index})">🗑️</button>
                 </div>
               </div>
               <div style="margin-top:8px;">
-                ${item.detalleRolls.map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(ing => ingredienteDisponible(ing) ? limpiarIngrediente(ing) : `❌ ${limpiarIngrediente(ing)} (agotado)`).join(", ")}`).join("<br>")}
+                ${item.tipo === "bebida"
+                  ? `🥤 ${item.nombre} · Cantidad: ${cantidadItem(item)}`
+                  : (item.detalleRolls || []).map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(ing => ingredienteDisponible(ing) ? limpiarIngrediente(ing) : `❌ ${limpiarIngrediente(ing)} (agotado)`).join(", ")}`).join("<br>")
+                }
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 ${item.extraPolloCamaron ? `<br>Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}` : ""}
@@ -2431,6 +2965,8 @@ async function abrirConfirmacion() {
   }
 
   document.getElementById("finalPanel").classList.add("active");
+  actualizarPreguntaBebidasFinal();
+  renderBebidasCarta();
   await generarOpcionesHorario();
   actualizarCampoNombreFinal();
 
@@ -2496,6 +3032,8 @@ function cerrarConfirmacion() {
       const tiempos = horarioConfig?.tiempos || HORARIO_CONFIG_DEFAULT.tiempos;
 
       (productos || []).forEach(prod => {
+        if (prod.tipo === "bebida") return;
+
         const nombre = String(prod.nombre || "").toLowerCase();
         const piezas = String(prod.piezas || "").toLowerCase();
         const cantidad = Number(prod.cantidad || 1);
@@ -3168,14 +3706,20 @@ let mensaje =
   `Hola, quiero hacer un pedido:%0A%0A`;
       carrito.forEach((item, i) => {
         mensaje += `*${i + 1}. ${item.nombre}* - ${formatCLP(item.precioFinal)}%0A`;
-        mensaje += `${item.piezas}${cantidadItem(item) > 1 ? ` · Cantidad: ${cantidadItem(item)}` : ""}%0A`;
-        item.detalleRolls.forEach(roll => {
-          mensaje += `- ${roll.nombre}: ${roll.ingredientes.map(limpiarIngrediente).join(", ")}%0A`;
-        });
+        mensaje += `${item.piezas || ""}${cantidadItem(item) > 1 ? ` · Cantidad: ${cantidadItem(item)}` : ""}%0A`;
+
+        if (item.tipo === "bebida") {
+          mensaje += `- Bebida: ${item.nombre}%0A`;
+        } else {
+          (item.detalleRolls || []).forEach(roll => {
+            mensaje += `- ${roll.nombre}: ${roll.ingredientes.map(limpiarIngrediente).join(", ")}%0A`;
+          });
+        }
+
         if (item.extraSalmon) mensaje += `Adicional salmón: ${formatCLP(item.extraSalmon)}%0A`;
         if (item.extraCuarto) mensaje += `Ingrediente extra: ${formatCLP(item.extraCuarto)}%0A`;
         if (item.extraPolloCamaron) mensaje += `Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}%0A`;
-        
+
         mensaje += `%0A`;
       });
 
@@ -3220,10 +3764,12 @@ window.location.href =
 
 async function iniciarCarta() {
   await cargarIngredientesDesdeFirebase();
+  await cargarBebidasDesdeFirebase();
   await cargarHorarioDesdeFirebase();
   aplicarEstadoMenuDigital();
   firmaUltimaConfigHorario = firmaHorarioConfig(horarioConfig);
   iniciarEscuchaIngredientes();
+  iniciarEscuchaBebidas();
   iniciarEscuchaHorario();
   iniciarActualizacionHorarioCada5Segundos();
   renderMenu();
