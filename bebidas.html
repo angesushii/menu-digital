@@ -54,6 +54,88 @@
       padding:18px 14px 44px;
     }
 
+
+    .toggle-card {
+      overflow: hidden;
+    }
+
+    .toggle-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .toggle-head h2 {
+      margin: 0;
+    }
+
+    .toggle-btn {
+      background: #111;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .toggle-body {
+      display: none;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .toggle-body.active {
+      display: block;
+    }
+
+    .resumen-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .resumen-box {
+      background: #eef8ff;
+      border: 1px solid #9ed8ff;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .resumen-box span {
+      display: block;
+      color: #075985;
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .resumen-box strong {
+      color: #0369a1;
+      font-size: 27px;
+    }
+
+    .top-bebidas {
+      margin: 12px 0 0;
+      padding-left: 20px;
+      line-height: 1.8;
+    }
+
+    .top-bebidas strong {
+      color: var(--rojo);
+    }
+
+    @media(max-width:760px) {
+      .toggle-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .resumen-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+
     .card {
       background:rgba(255,255,255,.96);
       border-radius:var(--radio);
@@ -296,54 +378,120 @@
   </header>
 
   <main>
-    <section class="card">
-      <h2 id="formTitulo">➕ Agregar bebida</h2>
-      <div class="muted">Configura categoría, nombre, precio, stock y disponibilidad.</div>
-
-      <div class="form-grid">
+    <section class="card toggle-card">
+      <div class="toggle-head" onclick="togglePanel('agregarPanel')">
         <div>
-          <label>Categoría</label>
-          <select id="categoria">
-            <option value="Lata 350 ml">Lata 350 ml</option>
-            <option value="Botella 591 ml">Botella 591 ml</option>
-          </select>
+          <h2 id="formTitulo">➕ Agregar bebida</h2>
+          <div class="muted">Configura categoría, nombre, precio, stock y disponibilidad.</div>
         </div>
-
-        <div>
-          <label>Nombre</label>
-          <input id="nombre" placeholder="Ej: Coca-Cola">
-        </div>
-
-        <div>
-          <label>Precio</label>
-          <input id="precio" type="number" min="0" step="100" placeholder="Ej: 1500">
-        </div>
-
-        <div>
-          <label>Stock</label>
-          <input id="stock" type="number" min="0" step="1" placeholder="Ej: 12">
-        </div>
+        <button type="button" class="toggle-btn">Ver / ocultar</button>
       </div>
 
-      <button class="primary" id="guardarBtn">Guardar bebida</button>
-      <div id="formStatus" class="status"></div>
+      <div id="agregarPanel" class="toggle-body">
+        <div class="form-grid">
+          <div>
+            <label>Categoría</label>
+            <select id="categoria">
+              <option value="Lata 350 ml">Lata 350 ml</option>
+              <option value="Botella 591 ml">Botella 591 ml</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Nombre</label>
+            <input id="nombre" placeholder="Ej: Coca-Cola">
+          </div>
+
+          <div>
+            <label>Precio</label>
+            <input id="precio" type="number" min="0" step="100" placeholder="Ej: 1500">
+          </div>
+
+          <div>
+            <label>Stock</label>
+            <input id="stock" type="number" min="0" step="1" placeholder="Ej: 12">
+          </div>
+        </div>
+
+        <button class="primary" id="guardarBtn">Guardar bebida</button>
+        <div id="formStatus" class="status"></div>
+      </div>
     </section>
 
-    <div class="section-title">
-      <span>🥫</span>
-      <h2>Latas 350 ml</h2>
-    </div>
-    <div id="listaLatas" class="bebidas-grid">
-      <div class="empty">Cargando latas...</div>
-    </div>
+    <section class="card toggle-card">
+      <div class="toggle-head" onclick="togglePanel('resumenBebidasPanel')">
+        <div>
+          <h2>💰 Resumen financiero bebidas</h2>
+          <div class="muted">Ventas de bebidas separadas del sushi.</div>
+        </div>
+        <button type="button" class="toggle-btn">Ver / ocultar</button>
+      </div>
 
-    <div class="section-title">
-      <span>🧴</span>
-      <h2>Botellas 591 ml</h2>
-    </div>
-    <div id="listaBotellas" class="bebidas-grid">
-      <div class="empty">Cargando botellas...</div>
-    </div>
+      <div id="resumenBebidasPanel" class="toggle-body">
+        <div class="resumen-grid">
+          <div class="resumen-box">
+            <span>Total del día</span>
+            <strong id="bebidasTotalDia">$0</strong>
+          </div>
+
+          <div class="resumen-box">
+            <span>Total semanal</span>
+            <strong id="bebidasTotalSemana">$0</strong>
+          </div>
+
+          <div class="resumen-box">
+            <span>Total mensual</span>
+            <strong id="bebidasTotalMes">$0</strong>
+          </div>
+
+          <div class="resumen-box">
+            <span>Acumulado total</span>
+            <strong id="bebidasTotalAcumulado">$0</strong>
+          </div>
+
+          <div class="resumen-box">
+            <span>Unidades vendidas hoy</span>
+            <strong id="bebidasUnidadesDia">0</strong>
+          </div>
+
+          <div class="resumen-box">
+            <span>Bebida más vendida hoy</span>
+            <strong id="bebidaMasVendida">-</strong>
+          </div>
+        </div>
+
+        <h3 style="margin:16px 0 4px;color:var(--rojo);">Top bebidas del día</h3>
+        <ol id="topBebidasDia" class="top-bebidas"></ol>
+      </div>
+    </section>
+
+    <section class="card toggle-card">
+      <div class="toggle-head" onclick="togglePanel('inventarioPanel')">
+        <div>
+          <h2>📦 Inventario</h2>
+          <div class="muted">Stock actual de latas y botellas.</div>
+        </div>
+        <button type="button" class="toggle-btn">Ver / ocultar</button>
+      </div>
+
+      <div id="inventarioPanel" class="toggle-body active">
+        <div class="section-title">
+          <span>🥫</span>
+          <h2>Latas 350 ml</h2>
+        </div>
+        <div id="listaLatas" class="bebidas-grid">
+          <div class="empty">Cargando latas...</div>
+        </div>
+
+        <div class="section-title">
+          <span>🧴</span>
+          <h2>Botellas 591 ml</h2>
+        </div>
+        <div id="listaBotellas" class="bebidas-grid">
+          <div class="empty">Cargando botellas...</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script type="module">
@@ -356,7 +504,9 @@
       setDoc,
       updateDoc,
       deleteDoc,
-      onSnapshot
+      onSnapshot,
+      query,
+      orderBy
     } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -386,6 +536,165 @@
 
     let bebidas = [];
     let editandoId = null;
+
+    let pedidosGlobales = [];
+
+    function togglePanel(id) {
+      const panel = document.getElementById(id);
+      if (panel) panel.classList.toggle("active");
+    }
+
+    window.togglePanel = togglePanel;
+
+    function getFechaObj(pedido) {
+      if (pedido.fechaISO) return new Date(pedido.fechaISO);
+      if (pedido.creadoEn && typeof pedido.creadoEn.toDate === "function") return pedido.creadoEn.toDate();
+      if (pedido.fecha) return new Date(pedido.fecha);
+      return null;
+    }
+
+    function fechaLocalYYYYMMDD(fecha) {
+      if (!fecha) return "";
+      return fecha.toLocaleDateString("en-CA", { timeZone: "America/Santiago" });
+    }
+
+    function fechaHoyChile() {
+      return new Date().toLocaleDateString("en-CA", { timeZone: "America/Santiago" });
+    }
+
+    function inicioSemanaLunes(fechaString) {
+      const [y, m, d] = fechaString.split("-").map(Number);
+      const fecha = new Date(Date.UTC(y, m - 1, d));
+      const dia = fecha.getUTCDay() || 7;
+      fecha.setUTCDate(fecha.getUTCDate() - dia + 1);
+      return fecha.toISOString().slice(0, 10);
+    }
+
+    function finSemanaDomingo(fechaString) {
+      const ini = inicioSemanaLunes(fechaString);
+      const [y, m, d] = ini.split("-").map(Number);
+      const fecha = new Date(Date.UTC(y, m - 1, d));
+      fecha.setUTCDate(fecha.getUTCDate() + 6);
+      return fecha.toISOString().slice(0, 10);
+    }
+
+    function entreFechas(fecha, desde, hasta) {
+      return fecha >= desde && fecha <= hasta;
+    }
+
+    function mismoMes(fechaPedido, fechaBase) {
+      return fechaPedido.slice(0, 7) === fechaBase.slice(0, 7);
+    }
+
+    function obtenerFechaLocalPedido(pedido) {
+      return fechaLocalYYYYMMDD(getFechaObj(pedido));
+    }
+
+    function esProductoBebida(prod) {
+      return prod?.tipo === "bebida" || String(prod?.categoria || "").toLowerCase() === "bebida";
+    }
+
+    function totalBebidasPedido(pedido) {
+      return (pedido.productos || []).reduce((acc, prod) => {
+        if (!esProductoBebida(prod)) return acc;
+        return acc + Number(prod.precioFinal || 0);
+      }, 0);
+    }
+
+    function sumarBebidas(pedidos) {
+      return pedidos.reduce((acc, pedido) => acc + totalBebidasPedido(pedido), 0);
+    }
+
+    function contarUnidadesBebidas(pedidos) {
+      return pedidos.reduce((acc, pedido) => {
+        return acc + (pedido.productos || []).reduce((sub, prod) => {
+          if (!esProductoBebida(prod)) return sub;
+          return sub + Number(prod.cantidad || 1);
+        }, 0);
+      }, 0);
+    }
+
+    function contarBebidas(pedidos) {
+      const conteo = {};
+
+      pedidos.forEach(pedido => {
+        (pedido.productos || []).forEach(prod => {
+          if (!esProductoBebida(prod)) return;
+
+          const nombre = prod.nombre || "Bebida";
+          conteo[nombre] = (conteo[nombre] || 0) + Number(prod.cantidad || 1);
+        });
+      });
+
+      return Object.entries(conteo).sort((a, b) => b[1] - a[1]);
+    }
+
+    function renderTopBebidas(entradas) {
+      const el = document.getElementById("topBebidasDia");
+      if (!el) return;
+
+      if (!entradas.length) {
+        el.innerHTML = "<li>No hay bebidas vendidas hoy.</li>";
+        return;
+      }
+
+      el.innerHTML = entradas.slice(0, 5).map(([nombre, cantidad]) => (
+        `<li><strong>${nombre}</strong>: ${cantidad}</li>`
+      )).join("");
+    }
+
+    function actualizarResumenFinancieroBebidas() {
+      const hoy = fechaHoyChile();
+      const semanaInicio = inicioSemanaLunes(hoy);
+      const semanaFin = finSemanaDomingo(hoy);
+
+      const pedidosDia = pedidosGlobales.filter(p => obtenerFechaLocalPedido(p) === hoy);
+      const pedidosSemana = pedidosGlobales.filter(p => {
+        const f = obtenerFechaLocalPedido(p);
+        return entreFechas(f, semanaInicio, semanaFin);
+      });
+      const pedidosMes = pedidosGlobales.filter(p => {
+        const f = obtenerFechaLocalPedido(p);
+        return mismoMes(f, hoy);
+      });
+
+      const totalDia = sumarBebidas(pedidosDia);
+      const totalSemana = sumarBebidas(pedidosSemana);
+      const totalMes = sumarBebidas(pedidosMes);
+      const totalAcumulado = sumarBebidas(pedidosGlobales);
+      const unidadesDia = contarUnidadesBebidas(pedidosDia);
+      const ranking = contarBebidas(pedidosDia);
+      const masVendida = ranking.length ? `${ranking[0][0]} (${ranking[0][1]})` : "-";
+
+      document.getElementById("bebidasTotalDia").textContent = formatCLP(totalDia);
+      document.getElementById("bebidasTotalSemana").textContent = formatCLP(totalSemana);
+      document.getElementById("bebidasTotalMes").textContent = formatCLP(totalMes);
+      document.getElementById("bebidasTotalAcumulado").textContent = formatCLP(totalAcumulado);
+      document.getElementById("bebidasUnidadesDia").textContent = unidadesDia;
+      document.getElementById("bebidaMasVendida").textContent = masVendida;
+
+      renderTopBebidas(ranking);
+    }
+
+    async function cargarResumenFinancieroBebidas() {
+      try {
+        const q = query(collection(db, "pedidos"), orderBy("fechaISO", "desc"));
+        const snap = await getDocs(q);
+
+        pedidosGlobales = [];
+        snap.forEach(docSnap => {
+          pedidosGlobales.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+
+        actualizarResumenFinancieroBebidas();
+      } catch (error) {
+        console.error("No se pudo cargar el resumen financiero de bebidas:", error);
+      }
+    }
+
 
     function slugBebida(categoria, nombre) {
       return `${categoria}-${nombre}`
@@ -656,6 +965,7 @@
       try {
         await crearBebidasInicialesSiFaltan();
         iniciarEscuchaBebidas();
+        await cargarResumenFinancieroBebidas();
       } catch (error) {
         console.error(error);
         alert("No se pudo iniciar bebidas.html. Revisa las reglas de Firestore o la consola.");
