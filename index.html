@@ -1398,7 +1398,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, doc, getDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDUMySSnAS5mpEFtncooBFn-268Z8LuD5Y",
@@ -1422,6 +1422,7 @@
     window.doc = doc;
     window.getDoc = getDoc;
     window.onSnapshot = onSnapshot;
+    window.runTransaction = runTransaction;
   </script>
 
   <script>
@@ -3564,30 +3565,115 @@ function cerrarConfirmacion() {
       }
     });
 
+    function bebidasSolicitadasCarrito() {
+      const mapa = new Map();
+
+      carrito
+        .filter(item => item.tipo === "bebida" && item.bebidaId)
+        .forEach(item => {
+          const bebidaId = item.bebidaId;
+          const cantidad = Number(item.cantidad || 1);
+
+          if (!mapa.has(bebidaId)) {
+            mapa.set(bebidaId, {
+              bebidaId,
+              nombre: item.nombre || "Bebida",
+              cantidad: 0
+            });
+          }
+
+          mapa.get(bebidaId).cantidad += cantidad;
+        });
+
+      return Array.from(mapa.values());
+    }
+
+    function crearErrorStock(mensaje) {
+      const error = new Error(mensaje);
+      error.tipo = "stock_bebida";
+      return error;
+    }
+
     async function guardarPedidoFirebase(cliente, total, telefonoCliente) {
-      if (!window.db || !window.addDoc || !window.collection) return false;
+      if (!window.db || !window.collection || !window.doc) return false;
 
       const datosFinales = getDatosFinales();
       const horarioRetiro = datosFinales.horarioRetiro;
       const tiempoPreparacion = calcularTiempoPreparacion(carrito);
+      const bebidasPedido = bebidasSolicitadasCarrito();
 
-      await window.addDoc(
-        window.collection(window.db, "pedidos"),
-        {
-          cliente,
-          telefonoCliente,
-          telefonoWhatsApp: telefonoWhatsAppChile(telefonoCliente),
-          total,
-          productos: carrito,
-          datosFinales,
-          formaPago: "Efectivo",
-          horarioRetiro,
-          tiempoPreparacion,
-          estado: "nuevo",
-          creadoEn: window.serverTimestamp ? window.serverTimestamp() : new Date(),
-          fechaISO: new Date().toISOString()
+      const pedidoData = {
+        cliente,
+        telefonoCliente,
+        telefonoWhatsApp: telefonoWhatsAppChile(telefonoCliente),
+        total,
+        productos: carrito,
+        datosFinales,
+        formaPago: "Efectivo",
+        horarioRetiro,
+        tiempoPreparacion,
+        estado: "nuevo",
+        creadoEn: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+        fechaISO: new Date().toISOString()
+      };
+
+      if (!bebidasPedido.length) {
+        await window.addDoc(
+          window.collection(window.db, "pedidos"),
+          pedidoData
+        );
+
+        return true;
+      }
+
+      if (!window.runTransaction) {
+        throw crearErrorStock("No se pudo verificar el stock de bebidas. Intenta nuevamente.");
+      }
+
+      await window.runTransaction(window.db, async (transaction) => {
+        const bebidaRefs = bebidasPedido.map(item => ({
+          ...item,
+          ref: window.doc(window.db, "bebidas", item.bebidaId)
+        }));
+
+        const snaps = [];
+
+        for (const item of bebidaRefs) {
+          const snap = await transaction.get(item.ref);
+          snaps.push({ ...item, snap });
         }
-      );
+
+        for (const item of snaps) {
+          if (!item.snap.exists()) {
+            throw crearErrorStock(`${item.nombre} ya no está disponible.`);
+          }
+
+          const data = item.snap.data();
+          const stockActual = Number(data.stock || 0);
+          const activa = data.activa !== false;
+
+          if (!activa || stockActual <= 0) {
+            throw crearErrorStock(`${data.nombre || item.nombre} está sin stock.`);
+          }
+
+          if (stockActual < item.cantidad) {
+            throw crearErrorStock(`No queda stock suficiente de ${data.nombre || item.nombre}. Disponible: ${stockActual}.`);
+          }
+        }
+
+        for (const item of snaps) {
+          const data = item.snap.data();
+          const stockActual = Number(data.stock || 0);
+
+          transaction.update(item.ref, {
+            stock: stockActual - item.cantidad,
+            actualizadoEn: new Date().toISOString()
+          });
+        }
+
+        const pedidoRef = window.doc(window.collection(window.db, "pedidos"));
+        transaction.set(pedidoRef, pedidoData);
+      });
 
       return true;
     }
@@ -3697,7 +3783,33 @@ const total = subtotal - descuentoPromoA;
         await guardarPedidoFirebase(cliente, total, telefonoCliente);
       } catch (error) {
         console.error("Error guardando pedido:", error);
-        alert("El pedido se enviará por WhatsApp, pero no se pudo guardar en el registro interno.");
+
+        if (error?.tipo === "stock_bebida") {
+          alert(error.message || "No hay stock suficiente de una bebida seleccionada.");
+
+          await cargarBebidasDesdeFirebase();
+          renderCarrito();
+
+          if (botonConfirmar) {
+            botonConfirmar.disabled = false;
+            botonConfirmar.textContent = "Confirmar y enviar por WhatsApp";
+            botonConfirmar.style.opacity = "1";
+            botonConfirmar.style.cursor = "pointer";
+          }
+
+          return;
+        }
+
+        alert("No se pudo guardar el pedido. Intenta nuevamente antes de enviarlo por WhatsApp.");
+
+        if (botonConfirmar) {
+          botonConfirmar.disabled = false;
+          botonConfirmar.textContent = "Confirmar y enviar por WhatsApp";
+          botonConfirmar.style.opacity = "1";
+          botonConfirmar.style.cursor = "pointer";
+        }
+
+        return;
       }
 
 let mensaje =
