@@ -666,8 +666,6 @@
       orderBy,
       doc,
       deleteDoc,
-      getDoc,
-      updateDoc,
       runTransaction
     } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
@@ -758,10 +756,15 @@
       const mapa = new Map();
 
       (pedido.productos || [])
-        .filter(prod => esProductoBebida(prod) && prod.bebidaId)
+        .filter(prod => esProductoBebida(prod))
         .forEach(prod => {
-          const id = prod.bebidaId;
+          const id = prod.bebidaId || "";
           const cantidad = Number(prod.cantidad || 1);
+
+          if (!id) {
+            console.warn("Bebida sin bebidaId, no se puede reponer automáticamente:", prod);
+            return;
+          }
 
           if (!mapa.has(id)) {
             mapa.set(id, {
@@ -778,16 +781,17 @@
     }
 
     async function reponerBebidasDePedido(pedido) {
-      const bebidas = bebidasDelPedidoParaReponer(pedido);
+      const bebidasReponer = bebidasDelPedidoParaReponer(pedido);
 
-      if (!bebidas.length) return;
-
-      if (!runTransaction) {
-        throw new Error("No se pudo iniciar la reposición de bebidas.");
+      if (!bebidasReponer.length) {
+        return {
+          repuestas: 0,
+          detalle: []
+        };
       }
 
       await runTransaction(db, async (transaction) => {
-        const items = bebidas.map(item => ({
+        const items = bebidasReponer.map(item => ({
           ...item,
           ref: doc(db, "bebidas", item.bebidaId)
         }));
@@ -801,8 +805,7 @@
 
         for (const item of snaps) {
           if (!item.snap.exists()) {
-            console.warn(`No existe la bebida ${item.nombre}; no se pudo reponer.`);
-            continue;
+            throw new Error(`No existe la bebida en inventario: ${item.nombre}`);
           }
 
           const data = item.snap.data();
@@ -814,11 +817,17 @@
           });
         }
       });
+
+      return {
+        repuestas: bebidasReponer.reduce((acc, b) => acc + b.cantidad, 0),
+        detalle: bebidasReponer
+      };
     }
 
     async function eliminarPedidoConReposicion(pedido) {
-      await reponerBebidasDePedido(pedido);
+      const resultado = await reponerBebidasDePedido(pedido);
       await deleteDoc(doc(db, "pedidos", pedido.id));
+      return resultado;
     }
 
     function totalProducto(prod) {
@@ -1264,26 +1273,37 @@
     window.eliminarPedido = async function eliminarPedido(id) {
       const pedido = pedidosGlobales.find(p => p.id === id);
       const bebidas = pedido ? bebidasDelPedidoParaReponer(pedido) : [];
+
       const textoBebidas = bebidas.length
         ? `\n\nSe repondrán al inventario:\n${bebidas.map(b => `• ${b.nombre}: ${b.cantidad}`).join("\n")}`
-        : "";
+        : "\n\nEste pedido no tiene bebidas reponibles registradas.";
 
       const ok = confirm("¿Seguro que quieres eliminar este pedido? Esta acción no se puede deshacer." + textoBebidas);
       if (!ok) return;
 
       try {
+        let resultado = { repuestas: 0, detalle: [] };
+
         if (pedido) {
-          await eliminarPedidoConReposicion(pedido);
+          resultado = await eliminarPedidoConReposicion(pedido);
         } else {
           await deleteDoc(doc(db, "pedidos", id));
         }
 
         await cargarPedidos();
+
+        if (resultado.repuestas > 0) {
+          alert(`Pedido eliminado. Se repusieron ${resultado.repuestas} bebida(s) al inventario.`);
+        } else {
+          alert("Pedido eliminado. No se repusieron bebidas porque el pedido no tenía bebidas registradas con bebidaId.");
+        }
+
       } catch (error) {
         console.error(error);
-        alert("No se pudo eliminar o reponer bebidas. Revisa que las reglas de Firestore permitan update y delete.");
+        alert("No se pudo eliminar o reponer bebidas. Revisa que las reglas de Firestore permitan escribir en bebidas.");
       }
     };
+
 
     window.cargarPedidos = async function cargarPedidos() {
       const fechaSeleccionada = document.getElementById("fecha").value;
