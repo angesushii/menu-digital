@@ -1618,6 +1618,12 @@
           titulo: "Botella 591cc",
           precioFallback: 1500,
           filtro: b => b.categoria === "Botella 591 ml"
+        },
+        {
+          id: "botella-1l",
+          titulo: "Botella 1 Litro",
+          precioFallback: 2000,
+          filtro: b => b.categoria === "Botella 1 L" || b.categoria === "Botella 1 Litro"
         }
       ];
     }
@@ -1631,6 +1637,7 @@
     function nombreCategoriaBebida(categoria) {
       if (categoria === "Lata 350 ml") return "Lata 350cc";
       if (categoria === "Botella 591 ml") return "Botella 591cc";
+      if (categoria === "Botella 1 L" || categoria === "Botella 1 Litro") return "Botella 1 Litro";
       return categoria || "Bebidas";
     }
 
