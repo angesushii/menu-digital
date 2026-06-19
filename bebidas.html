@@ -394,7 +394,7 @@
             <select id="categoria">
               <option value="Lata 350 ml">Lata 350 ml</option>
               <option value="Botella 591 ml">Botella 591 ml</option>
-               <option value="Botella Coca Cola 1L">Botella 1L</option>
+              <option value="Botella 1 L">Botella 1 L</option>
             </select>
           </div>
 
@@ -491,6 +491,14 @@
         <div id="listaBotellas" class="bebidas-grid">
           <div class="empty">Cargando botellas...</div>
         </div>
+
+        <div class="section-title">
+          <span>🧃</span>
+          <h2>Botellas 1 L</h2>
+        </div>
+        <div id="listaBotellas1L" class="bebidas-grid">
+          <div class="empty">Cargando botellas 1 L...</div>
+        </div>
       </div>
     </section>
   </main>
@@ -532,7 +540,9 @@
       { categoria: "Lata 350 ml", nombre: "Coca-Cola Zero", precio: 0, stock: 0, activa: true },
       { categoria: "Botella 591 ml", nombre: "Coca-Cola", precio: 0, stock: 0, activa: true },
       { categoria: "Botella 591 ml", nombre: "Sprite", precio: 0, stock: 0, activa: true },
-      { categoria: "Botella 591 ml", nombre: "Fanta", precio: 0, stock: 0, activa: true }
+      { categoria: "Botella 591 ml", nombre: "Fanta", precio: 0, stock: 0, activa: true },
+      { categoria: "Botella 1 L", nombre: "Coca-Cola", precio: 0, stock: 0, activa: true },
+      { categoria: "Botella 1 L", nombre: "Coca-Cola Zero", precio: 0, stock: 0, activa: true }
     ];
 
     let bebidas = [];
@@ -899,9 +909,11 @@
     function renderBebidas() {
       const latas = bebidas.filter(b => b.categoria === "Lata 350 ml");
       const botellas = bebidas.filter(b => b.categoria === "Botella 591 ml");
+      const botellas1L = bebidas.filter(b => b.categoria === "Botella 1 L");
 
       const listaLatas = document.getElementById("listaLatas");
       const listaBotellas = document.getElementById("listaBotellas");
+      const listaBotellas1L = document.getElementById("listaBotellas1L");
 
       listaLatas.innerHTML = latas.length
         ? latas.map(renderBebidaCard).join("")
@@ -909,7 +921,11 @@
 
       listaBotellas.innerHTML = botellas.length
         ? botellas.map(renderBebidaCard).join("")
-        : `<div class="empty">No hay botellas configuradas.</div>`;
+        : `<div class="empty">No hay botellas 591 ml configuradas.</div>`;
+
+      listaBotellas1L.innerHTML = botellas1L.length
+        ? botellas1L.map(renderBebidaCard).join("")
+        : `<div class="empty">No hay botellas 1 L configuradas.</div>`;
     }
 
     function iniciarEscuchaBebidas() {
