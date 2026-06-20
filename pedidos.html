@@ -1102,12 +1102,48 @@
       return "$" + Number(valor || 0).toLocaleString("es-CL");
     }
 
-    function limpiarIngrediente(nombre) {
-      return String(nombre || "")
-        .replace(/\s*\(\+\$?1\.?300\)\s*/g, "")
-        .replace(/\s*\(\+1300\)\s*/g, "")
-        .trim();
-    }
+function limpiarIngrediente(nombre) {
+  return String(nombre || "")
+    .replace(/\s*\(\+\$?1\.?300\)\s*/g, "")
+    .replace(/\s*\(\+1300\)\s*/g, "")
+    .trim();
+}
+
+function clasificarIngrediente(nombre) {
+  const limpio = limpiarIngrediente(nombre);
+  const lower = limpio.toLowerCase();
+
+  if (lower.includes("pollo")) return { prioridad: 1, nombre: "pollo" };
+  if (lower.includes("camar")) return { prioridad: 2, nombre: "camarón" };
+  if (lower.includes("kanikama")) return { prioridad: 3, nombre: "kanikama" };
+  if (lower.includes("salm")) return { prioridad: 4, nombre: "salmón" };
+
+if (lower.includes("philadelphia")) return { prioridad: 2, nombre: "queso" };
+if (lower.includes("gauda")) return { prioridad: 2, nombre: "queso gauda" };
+
+  if (lower.includes("palta")) return { prioridad: 7, nombre: "palta" };
+
+  return { prioridad: 8, nombre: lower };
+}
+
+function formatearIngredientesPedido(lista = []) {
+  if (!Array.isArray(lista) || !lista.length) return "";
+
+  const ordenados = lista
+    .map(clasificarIngrediente)
+    .sort((a, b) => a.prioridad - b.prioridad);
+
+  const principales = ordenados.slice(0, 3).map(i => i.nombre);
+  const extras = ordenados.slice(3).map(i => i.nombre);
+
+  let texto = principales.join(", ");
+
+  if (extras.length) {
+    texto += " +" + extras.join(" +");
+  }
+
+  return texto;
+}
 
     function getFechaObj(pedido) {
       if (pedido.fechaISO) return new Date(pedido.fechaISO);
@@ -1264,7 +1300,7 @@ Gracias por preferir Sushi Ange ❤️`;
                   ${textoCantidadDestacada(prod)}
 
                   ${(prod.detalleRolls || []).map(roll => `
-                    <div class="detalle-roll">🍣 ${roll.nombre}: ${(roll.ingredientes || []).map(limpiarIngrediente).join(", ")}</div>
+                    <div class="detalle-roll">🍣 ${roll.nombre}: ${formatearIngredientesPedido(roll.ingredientes || [])}</div>
                   `).join("")}
 
                   ${prod.extraSalmon ? `<div class="muted">Adicional salmón: ${formatCLP(prod.extraSalmon)}</div>` : ""}
