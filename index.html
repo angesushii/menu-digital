@@ -593,6 +593,195 @@
     }
 
 
+
+    .promo-express-section.hidden { display: none; }
+
+    .promo-express-toggle-card {
+      overflow: hidden;
+      padding: 0;
+      border: 2px solid rgba(255,179,0,.55);
+      box-shadow: 0 12px 34px rgba(0,0,0,.20), 0 0 26px rgba(255,179,0,.18);
+    }
+
+    .promo-express-toggle-head {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(255,179,0,.34), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(214,40,40,.34), transparent 34%),
+        linear-gradient(135deg, #060606, #171717 52%, #050505);
+      color: white;
+      padding: 18px;
+      min-height: 135px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .promo-express-toggle-head::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.10) 42%, transparent 60%);
+      transform: translateX(-100%);
+      animation: shineExpress 3.2s infinite;
+      pointer-events: none;
+    }
+
+    .promo-express-kicker {
+      color: #ffcc4d;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 13px;
+      text-shadow: 0 0 12px rgba(255,179,0,.45);
+    }
+
+    .promo-express-toggle-head h2 {
+      margin: 4px 0 0;
+      font-size: 31px;
+      line-height: 1;
+      text-transform: uppercase;
+      color: #ffcc4d;
+      text-shadow: 0 2px 0 #7a1f1f, 0 0 20px rgba(255,179,0,.42);
+    }
+
+    .promo-express-toggle-head p {
+      margin: 8px 0 0;
+      color: #f8f8f8;
+      font-size: 14px;
+      max-width: 520px;
+      font-weight: 800;
+    }
+
+    .promo-express-toggle-body {
+      padding: 14px;
+      background: linear-gradient(135deg, #fff8e8, #fff1f1);
+    }
+
+    .show-express-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ffb300, #d62828 68%, #9d0208);
+      color: white;
+      border: none;
+      border-radius: 18px;
+      padding: 17px 18px;
+      font-size: 18px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      cursor: pointer;
+      margin: 0;
+      box-shadow: 0 10px 24px rgba(214,40,40,.28), 0 0 18px rgba(255,179,0,.30);
+      animation: expressPulse 1.8s infinite;
+    }
+
+    .promo-express-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .express-card {
+      overflow: hidden;
+      padding: 0;
+      border: 2px solid rgba(255,179,0,.38);
+      background: #111;
+    }
+
+    .express-head {
+      background:
+        radial-gradient(circle at top left, rgba(255,179,0,.28), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(214,40,40,.35), transparent 38%),
+        linear-gradient(135deg, #080808, #1b1b1b);
+      color: white;
+      padding: 16px;
+      min-height: 145px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .express-head h2 {
+      margin: 0;
+      font-size: 24px;
+      text-transform: uppercase;
+      color: #ffcc4d;
+      text-shadow: 0 2px 0 #7a1f1f;
+    }
+
+    .express-tag {
+      color: white;
+      font-weight: 900;
+      font-size: 13px;
+      text-transform: uppercase;
+      margin-top: 5px;
+    }
+
+    .express-price {
+      align-self: flex-start;
+      background: linear-gradient(135deg, #d62828, #9d0208);
+      color: white;
+      padding: 9px 13px;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(214,40,40,.28);
+      border: 1px solid rgba(255,255,255,.25);
+    }
+
+    .express-body {
+      padding: 14px;
+      background: white;
+    }
+
+    .express-list {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.55;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .express-drink-pill {
+      display: inline-block;
+      background: #fff8e8;
+      color: #7a5300;
+      border: 1px solid #f0d28a;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-weight: 900;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .express-config-drink {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid #f0d28a;
+      background: #fff8e8;
+    }
+
+    .express-config-drink h3 {
+      margin: 0 0 8px;
+      color: #7a5300;
+      font-size: 17px;
+    }
+
+    @keyframes shineExpress {
+      0% { transform: translateX(-110%); }
+      45% { transform: translateX(110%); }
+      100% { transform: translateX(110%); }
+    }
+
+    @keyframes expressPulse {
+      0% { transform: scale(1); box-shadow: 0 10px 24px rgba(214,40,40,.24), 0 0 18px rgba(255,179,0,.24); }
+      50% { transform: scale(1.015); box-shadow: 0 14px 30px rgba(214,40,40,.34), 0 0 28px rgba(255,179,0,.42); }
+      100% { transform: scale(1); box-shadow: 0 10px 24px rgba(214,40,40,.24), 0 0 18px rgba(255,179,0,.24); }
+    }
+
+
     .bebidas-section.hidden { display: none; }
 
     .bebidas-toggle-card { overflow: hidden; padding: 0; }
@@ -1111,7 +1300,7 @@
     }
 
     @media (max-width: 760px) {
-      .promo-grid, .builder-options, .envoltura-grid, .final-grid, .repeat-actions, .horario-options { grid-template-columns: 1fr; }
+      .promo-grid, .promo-express-grid, .builder-options, .envoltura-grid, .final-grid, .repeat-actions, .horario-options { grid-template-columns: 1fr; }
       .ingredient-grid { grid-template-columns: 1fr; }
       .hero h1 { font-size: 29px; }
       .offer-head h2, .builder-head h2, .config-head h2 { font-size: 22px; }
@@ -1255,10 +1444,34 @@
     </section>
 
 
+    <section class="card promo-express-toggle-card">
+      <div class="promo-express-toggle-head">
+        <div>
+          <div class="promo-express-kicker">Combos rápidos + bebida incluida</div>
+          <h2>Promos Express</h2>
+          <p>Promos listas para pedir: hand rolls, envueltos y bebidas incluidas.</p>
+        </div>
+      </div>
+      <div class="promo-express-toggle-body">
+        <button id="toggleExpressBtn" class="show-express-btn" onclick="togglePromosExpress()">⚡ Ver Promos Express 🔥</button>
+      </div>
+    </section>
+
+    <section id="promoExpressSection" class="promo-express-section hidden">
+      <div class="section-title">
+        <span>⚡</span>
+        <h2>Promos Express</h2>
+      </div>
+
+      <div id="promoExpressGrid" class="promo-express-grid"></div>
+    </section>
+
+    <div id="configArea"></div>
+
     <section class="card bebidas-toggle-card">
       <div class="bebidas-toggle-head">
         <h2>Bebidas</h2>
-        <p>Agrega bebidas a tu pedido de forma rápida.</p>
+        <p>Agrega bebidas sueltas a tu pedido.</p>
       </div>
       <div class="bebidas-toggle-body">
         <button id="toggleBebidasBtn" class="show-bebidas-btn" onclick="toggleBebidas()">🥤 Ver bebidas 🥤</button>
@@ -1277,8 +1490,6 @@
         </div>
       </section>
     </section>
-
-    <div id="configArea"></div>
 
     <section class="cart-panel">
       <h2>🛒 Carrito</h2>
@@ -2023,6 +2234,20 @@ async function cargarIngredientesDesdeFirebase() {
       { id: "H", nombre: "Promo H", precio: 9500, piezas: "20 acevichados", rolls: ["10 acevichados", "10 acevichados"] }
     ];
 
+
+    const promosExpress = [
+      { id:"EX-HR1", nombre:"Express Hand Roll 1", precio:4000, piezas:"1 hand roll + 1 bebida lata CCU", rolls:["Hand roll 1"], bebidaGrupo:"lata-ccu-350", bebidaTexto:"1 bebida lata CCU", bebidaCantidad:1, descripcion:["1 hand roll","1 bebida lata CCU"], tiempoPreparacion:MIN_HANDROLL },
+      { id:"EX-HR2", nombre:"Express Hand Roll 2", precio:7800, piezas:"2 hand rolls + 2 bebidas latas CCU", rolls:["Hand roll 1","Hand roll 2"], bebidaGrupo:"lata-ccu-350", bebidaTexto:"2 bebidas latas CCU", bebidaCantidad:2, descripcion:["2 hand rolls","2 bebidas latas CCU"], tiempoPreparacion:MIN_HANDROLL*2 },
+      { id:"EX-HR4", nombre:"Express Hand Roll 4", precio:13500, piezas:"4 hand rolls + 1 bebida 1 litro", rolls:["Hand roll 1","Hand roll 2","Hand roll 3","Hand roll 4"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["4 hand rolls","1 bebida 1 litro"], tiempoPreparacion:MIN_HANDROLL*4 },
+      { id:"EX-HR5", nombre:"Express Hand Roll 5", precio:16500, piezas:"5 hand rolls + 1 bebida 1 litro", rolls:["Hand roll 1","Hand roll 2","Hand roll 3","Hand roll 4","Hand roll 5"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["5 hand rolls","1 bebida 1 litro"], tiempoPreparacion:MIN_HANDROLL*5 },
+      { id:"EX-20-1", nombre:"Express 20 Envueltos 1", precio:8500, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en tempura","10 envueltos en queso"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en tempura","10 envueltos en queso","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
+      { id:"EX-20-2", nombre:"Express 20 Envueltos 2", precio:7500, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en nori","10 envueltos en ciboulette"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en nori","10 envueltos en ciboulette","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
+      { id:"EX-20-3", nombre:"Express 20 Envueltos 3", precio:8000, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en tempura","10 envueltos en sésamo"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en tempura","10 envueltos en sésamo","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
+      { id:"EX-40-1", nombre:"Express 40 Envueltos 1", precio:15500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en tempura","10 envueltos en tempura","10 envueltos en queso","10 envueltos en queso"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["20 envueltos en tempura","20 envueltos en queso","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 },
+      { id:"EX-40-2", nombre:"Express 40 Envueltos 2", precio:13500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en nori","10 envueltos en sésamo","10 envueltos en ciboulette","10 envueltos en merkén"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["10 nori","10 sésamo","10 ciboulette","10 merkén","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 },
+      { id:"EX-40-3", nombre:"Express 40 Envueltos 3", precio:14500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en tempura","10 envueltos en palta","10 envueltos en nori","10 envueltos en ciboulette"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["10 tempura","10 palta","10 nori","10 ciboulette","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 }
+    ];
+
     let carrito = [];
     let itemActivo = null;
     let editandoIndex = null;
@@ -2254,6 +2479,179 @@ async function cargarIngredientesDesdeFirebase() {
           </div>
         </section>
       `).join("");
+    }
+
+    function togglePromosExpress() {
+      const section = document.getElementById("promoExpressSection");
+      const btn = document.getElementById("toggleExpressBtn");
+      if (!section || !btn) return;
+
+      section.classList.toggle("hidden");
+
+      if (section.classList.contains("hidden")) {
+        btn.innerHTML = "⚡ Ver Promos Express 🔥";
+      } else {
+        btn.innerHTML = "❌ Ocultar Promos Express";
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function renderPromosExpress() {
+      const grid = document.getElementById("promoExpressGrid");
+      if (!grid) return;
+
+      grid.innerHTML = promosExpress.map(promo => `
+        <section class="card express-card">
+          <div class="express-head">
+            <div>
+              <h2>${promo.nombre}</h2>
+              <div class="express-tag">${promo.piezas}</div>
+            </div>
+            <div class="express-price">${formatCLP(promo.precio)}</div>
+          </div>
+          <div class="express-body">
+            <span class="express-drink-pill">🥤 ${promo.bebidaTexto}</span>
+            <ul class="express-list">
+              ${promo.descripcion.map(i => `<li>${i}</li>`).join("")}
+            </ul>
+            <button class="choose-btn" onclick="abrirPromoExpress('${promo.id}')">Elegir esta promo express</button>
+          </div>
+        </section>
+      `).join("");
+    }
+
+    function abrirPromoExpress(id, datosExistentes = null, indexEditar = null) {
+      if (!menuDigitalAbierto()) {
+        alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+        return;
+      }
+
+      const base = promosExpress.find(p => p.id === id);
+      if (!base) return;
+
+      itemActivo = { ...base, tipo: "promoExpress" };
+      editandoIndex = indexEditar;
+      renderConfigPromoExpress(datosExistentes);
+      setTimeout(() => document.getElementById("configArea").scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+    }
+
+    function renderConfigPromoExpress(datosExistentes = null) {
+      const promo = itemActivo;
+      const area = document.getElementById("configArea");
+      const textoBoton = editandoIndex !== null ? "Guardar cambios" : `Agregar ${promo.nombre}`;
+      const grupo = grupoBebidaPorId(promo.bebidaGrupo);
+      const sufijo = "-express";
+
+      area.innerHTML = `
+        <section class="card config-card active">
+          <div class="config-head">
+            <div class="config-head-row">
+              <div>
+                <h2>${promo.nombre}</h2>
+                <span class="pieces-pill">${promo.piezas.toUpperCase()}</span>
+              </div>
+              <button class="back-btn" onclick="volverCarta()">← Ver carta</button>
+            </div>
+          </div>
+
+          <div class="config-body">
+            <ul class="included">${promo.descripcion.map(i => `<li>${i}</li>`).join("")}</ul>
+            ${promo.rolls.map((roll, index) => crearRollHTML(promo.id, index, roll)).join("")}
+
+            <div class="express-config-drink">
+              <h3>🥤 Bebida incluida</h3>
+              <div class="small">Selecciona ${promo.bebidaTexto}. Se descontará del inventario al confirmar.</div>
+              <label>Bebida</label>
+              <select id="bebidaSelect-${promo.bebidaGrupo}${sufijo}" onchange="actualizarVistaBebidaGrupo('${promo.bebidaGrupo}', '${sufijo}')">
+                ${grupo ? opcionesBebidaPorGrupo(grupo) : `<option value="">No hay bebidas configuradas</option>`}
+              </select>
+              <div id="bebidaStock-${promo.bebidaGrupo}${sufijo}" class="bebida-stock-note">Selecciona una bebida.</div>
+            </div>
+
+            <button class="add-btn" onclick="guardarPromoExpress('${promo.id}')">🛒 ${textoBoton}</button>
+          </div>
+        </section>
+      `;
+
+      promo.rolls.forEach((_, index) => actualizarIngredientes(promo.id, index));
+      actualizarVistaBebidaGrupo(promo.bebidaGrupo, sufijo);
+
+      if (datosExistentes) {
+        cargarDatosEnFormulario(promo.id, datosExistentes);
+        const select = document.getElementById(`bebidaSelect-${promo.bebidaGrupo}${sufijo}`);
+        if (select && datosExistentes.bebidaIncluida?.bebidaId) {
+          select.value = datosExistentes.bebidaIncluida.bebidaId;
+          actualizarVistaBebidaGrupo(promo.bebidaGrupo, sufijo);
+        }
+      }
+    }
+
+    async function guardarPromoExpress(id) {
+      if (!menuDigitalAbierto()) {
+        alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
+        aplicarEstadoMenuDigital();
+        return;
+      }
+
+      const promo = promosExpress.find(p => p.id === id);
+      if (!promo) return;
+
+      const datos = recolectarRolls(id, promo.rolls);
+      if (!datos) return;
+
+      const bebida = bebidaSeleccionadaPorGrupo(promo.bebidaGrupo, "-express");
+
+      if (!bebida) {
+        alert("Debes seleccionar la bebida incluida en la promo express.");
+        return;
+      }
+
+      if (!bebidaDisponible(bebida)) {
+        alert("La bebida seleccionada no está disponible por el momento.");
+        return;
+      }
+
+      const cantidadBebida = Number(promo.bebidaCantidad || 1);
+      const stock = Number(bebida.stock || 0);
+
+      if (stock < cantidadBebida) {
+        alert(`No hay stock suficiente de ${bebida.nombre}. Disponible: ${stock}.`);
+        return;
+      }
+
+      const item = {
+        id: promo.id,
+        tipo: "promoExpress",
+        nombre: promo.nombre,
+        piezas: promo.piezas,
+        detalleRolls: datos.detalleRolls,
+        observaciones: "",
+        extraSalmon: datos.extraSalmon,
+        extraCuarto: datos.extraCuarto,
+        extraPolloCamaron: datos.extraPolloCamaron,
+        precioBase: promo.precio,
+        cantidad: 1,
+        precioUnitario: promo.precio + datos.extraSalmon + datos.extraCuarto + datos.extraPolloCamaron,
+        precioFinal: promo.precio + datos.extraSalmon + datos.extraCuarto + datos.extraPolloCamaron,
+        bebidaIncluida: {
+          bebidaId: bebida.id,
+          nombre: bebida.nombre,
+          formato: grupoBebidaPorId(promo.bebidaGrupo)?.titulo || nombreCategoriaBebida(bebida.categoria),
+          cantidad: cantidadBebida
+        },
+        tiempoPreparacion: Number(promo.tiempoPreparacion || 0)
+      };
+
+      if (editandoIndex !== null) {
+        carrito[editandoIndex] = item;
+      } else {
+        carrito.push(item);
+      }
+
+      renderCarrito();
+      await actualizarHorarioSiFinalAbierto();
+      volverCarta();
+      document.querySelector(".cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function abrirPromo(id, datosExistentes = null, indexEditar = null) {
@@ -2795,6 +3193,11 @@ if (descuentoItem > 0) {
         return;
       }
 
+      if (item.tipo === "promoExpress") {
+        abrirPromoExpress(item.id, item, index);
+        return;
+      }
+
       document.querySelector(".builder-card").scrollIntoView({ behavior: "smooth", block: "start" });
       seleccionarTipoPersonalizado(item.categoria, item, index);
     }
@@ -2805,6 +3208,7 @@ if (descuentoItem > 0) {
       return {
         personalizados: conIndex.filter(item => item.tipo === "personalizado"),
         promos: conIndex.filter(item => item.tipo === "promo"),
+        promosExpress: conIndex.filter(item => item.tipo === "promoExpress"),
         bebidas: conIndex.filter(item => item.tipo === "bebida")
       };
     }
@@ -2835,6 +3239,7 @@ if (descuentoItem > 0) {
       cart.innerHTML = `
         ${renderGrupoCarrito("Pedido personalizado", grupos.personalizados)}
         ${renderGrupoCarrito("Promociones", grupos.promos)}
+        ${renderGrupoCarrito("Promos Express", grupos.promosExpress)}
         ${renderGrupoCarrito("Bebidas", grupos.bebidas)}
 
         ${descuentoPromoA > 0 ? `
@@ -2885,6 +3290,7 @@ if (descuentoItem > 0) {
                   ? `🥤 ${item.nombre} · Cantidad: ${cantidadItem(item)}`
                   : (item.detalleRolls || []).map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(ing => ingredienteDisponible(ing) ? limpiarIngrediente(ing) : `❌ ${limpiarIngrediente(ing)} (agotado)`).join(", ")}`).join("<br>")
                 }
+                ${item.tipo === "promoExpress" && item.bebidaIncluida ? `<br>🥤 Bebida incluida: ${item.bebidaIncluida.nombre} ${item.bebidaIncluida.formato || ""} · Cantidad: ${item.bebidaIncluida.cantidad || 1}` : ""}
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 ${item.extraPolloCamaron ? `<br>Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}` : ""}
@@ -3041,6 +3447,11 @@ function cerrarConfirmacion() {
 
       (productos || []).forEach(prod => {
         if (prod.tipo === "bebida") return;
+
+        if (prod.tipo === "promoExpress" && Number(prod.tiempoPreparacion || 0) > 0) {
+          minutos += Number(prod.tiempoPreparacion || 0);
+          return;
+        }
 
         const nombre = String(prod.nombre || "").toLowerCase();
         const piezas = String(prod.piezas || "").toLowerCase();
@@ -3575,22 +3986,33 @@ function cerrarConfirmacion() {
     function bebidasSolicitadasCarrito() {
       const mapa = new Map();
 
-      carrito
-        .filter(item => item.tipo === "bebida" && item.bebidaId)
-        .forEach(item => {
-          const bebidaId = item.bebidaId;
-          const cantidad = Number(item.cantidad || 1);
+      function sumarBebida(bebidaId, nombre, cantidad) {
+        if (!bebidaId) return;
 
-          if (!mapa.has(bebidaId)) {
-            mapa.set(bebidaId, {
-              bebidaId,
-              nombre: item.nombre || "Bebida",
-              cantidad: 0
-            });
-          }
+        if (!mapa.has(bebidaId)) {
+          mapa.set(bebidaId, {
+            bebidaId,
+            nombre: nombre || "Bebida",
+            cantidad: 0
+          });
+        }
 
-          mapa.get(bebidaId).cantidad += cantidad;
-        });
+        mapa.get(bebidaId).cantidad += Number(cantidad || 1);
+      }
+
+      carrito.forEach(item => {
+        if (item.tipo === "bebida" && item.bebidaId) {
+          sumarBebida(item.bebidaId, item.nombre, item.cantidad || 1);
+        }
+
+        if (item.tipo === "promoExpress" && item.bebidaIncluida?.bebidaId) {
+          sumarBebida(
+            item.bebidaIncluida.bebidaId,
+            `${item.bebidaIncluida.nombre || "Bebida"} ${item.bebidaIncluida.formato || ""}`.trim(),
+            item.bebidaIncluida.cantidad || 1
+          );
+        }
+      });
 
       return Array.from(mapa.values());
     }
@@ -3833,6 +4255,10 @@ let mensaje =
           (item.detalleRolls || []).forEach(roll => {
             mensaje += `- ${roll.nombre}: ${roll.ingredientes.map(limpiarIngrediente).join(", ")}%0A`;
           });
+
+          if (item.tipo === "promoExpress" && item.bebidaIncluida) {
+            mensaje += `- Bebida incluida: ${item.bebidaIncluida.nombre} ${item.bebidaIncluida.formato || ""} · Cantidad: ${item.bebidaIncluida.cantidad || 1}%0A`;
+          }
         }
 
         if (item.extraSalmon) mensaje += `Adicional salmón: ${formatCLP(item.extraSalmon)}%0A`;
@@ -3892,6 +4318,7 @@ async function iniciarCarta() {
   iniciarEscuchaHorario();
   iniciarActualizacionHorarioCada5Segundos();
   renderMenu();
+  renderPromosExpress();
   mostrarSugerenciaUltimoPedido();
 }
 
