@@ -755,6 +755,44 @@
       margin-bottom: 10px;
     }
 
+
+    .express-category-title {
+      grid-column: 1 / -1;
+      margin: 8px 0 0;
+      padding: 13px 14px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #111, #2a2a2a);
+      color: #ffcc4d;
+      font-size: 19px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border: 1px solid rgba(255,179,0,.45);
+      box-shadow: 0 8px 20px rgba(0,0,0,.12);
+    }
+
+    .express-category-title small {
+      display: block;
+      color: white;
+      font-size: 12px;
+      margin-top: 3px;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 700;
+    }
+
+    .express-drink-select-box {
+      border: 1px solid #f0d28a;
+      background: white;
+      border-radius: 14px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .express-drink-select-box label {
+      margin-top: 0;
+    }
+
     .express-config-drink {
       margin-top: 14px;
       padding: 14px;
@@ -1424,26 +1462,6 @@
       </div>
     </section>
 
-    <section class="card promo-toggle-card">
-      <div class="promo-toggle-head">
-        <h2>Promociones</h2>
-        <p>Revisa nuestros combos y elige tus ingredientes.</p>
-      </div>
-      <div class="promo-toggle-body">
-        <button id="togglePromosBtn" class="show-promos-btn" onclick="togglePromos()">🔥 Ver promociones 🔥</button>
-      </div>
-    </section>
-
-    <section id="promoSection" class="promo-section hidden">
-      <div class="section-title">
-        <span>🍱</span>
-        <h2>Promociones</h2>
-      </div>
-
-      <div id="promoGrid" class="promo-grid"></div>
-    </section>
-
-
     <section class="card promo-express-toggle-card">
       <div class="promo-express-toggle-head">
         <div>
@@ -1465,6 +1483,26 @@
 
       <div id="promoExpressGrid" class="promo-express-grid"></div>
     </section>
+
+    <section class="card promo-toggle-card">
+      <div class="promo-toggle-head">
+        <h2>Promociones</h2>
+        <p>Revisa nuestros combos y elige tus ingredientes.</p>
+      </div>
+      <div class="promo-toggle-body">
+        <button id="togglePromosBtn" class="show-promos-btn" onclick="togglePromos()">🔥 Ver promociones 🔥</button>
+      </div>
+    </section>
+
+    <section id="promoSection" class="promo-section hidden">
+      <div class="section-title">
+        <span>🍱</span>
+        <h2>Promociones</h2>
+      </div>
+
+      <div id="promoGrid" class="promo-grid"></div>
+    </section>
+
 
     <div id="configArea"></div>
 
@@ -2236,17 +2274,25 @@ async function cargarIngredientesDesdeFirebase() {
 
 
     const promosExpress = [
-      { id:"EX-HR1", nombre:"Express Hand Roll 1", precio:4000, piezas:"1 hand roll + 1 bebida lata CCU", rolls:["Hand roll 1"], bebidaGrupo:"lata-ccu-350", bebidaTexto:"1 bebida lata CCU", bebidaCantidad:1, descripcion:["1 hand roll","1 bebida lata CCU"], tiempoPreparacion:MIN_HANDROLL },
-      { id:"EX-HR2", nombre:"Express Hand Roll 2", precio:7800, piezas:"2 hand rolls + 2 bebidas latas CCU", rolls:["Hand roll 1","Hand roll 2"], bebidaGrupo:"lata-ccu-350", bebidaTexto:"2 bebidas latas CCU", bebidaCantidad:2, descripcion:["2 hand rolls","2 bebidas latas CCU"], tiempoPreparacion:MIN_HANDROLL*2 },
-      { id:"EX-HR4", nombre:"Express Hand Roll 4", precio:13500, piezas:"4 hand rolls + 1 bebida 1 litro", rolls:["Hand roll 1","Hand roll 2","Hand roll 3","Hand roll 4"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["4 hand rolls","1 bebida 1 litro"], tiempoPreparacion:MIN_HANDROLL*4 },
-      { id:"EX-HR5", nombre:"Express Hand Roll 5", precio:16500, piezas:"5 hand rolls + 1 bebida 1 litro", rolls:["Hand roll 1","Hand roll 2","Hand roll 3","Hand roll 4","Hand roll 5"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["5 hand rolls","1 bebida 1 litro"], tiempoPreparacion:MIN_HANDROLL*5 },
-      { id:"EX-20-1", nombre:"Express 20 Envueltos 1", precio:8500, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en tempura","10 envueltos en queso"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en tempura","10 envueltos en queso","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
-      { id:"EX-20-2", nombre:"Express 20 Envueltos 2", precio:7500, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en nori","10 envueltos en ciboulette"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en nori","10 envueltos en ciboulette","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
-      { id:"EX-20-3", nombre:"Express 20 Envueltos 3", precio:8000, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en tempura","10 envueltos en sésamo"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en tempura","10 envueltos en sésamo","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
-      { id:"EX-40-1", nombre:"Express 40 Envueltos 1", precio:15500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en tempura","10 envueltos en tempura","10 envueltos en queso","10 envueltos en queso"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["20 envueltos en tempura","20 envueltos en queso","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 },
-      { id:"EX-40-2", nombre:"Express 40 Envueltos 2", precio:13500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en nori","10 envueltos en sésamo","10 envueltos en ciboulette","10 envueltos en merkén"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["10 nori","10 sésamo","10 ciboulette","10 merkén","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 },
-      { id:"EX-40-3", nombre:"Express 40 Envueltos 3", precio:14500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en tempura","10 envueltos en palta","10 envueltos en nori","10 envueltos en ciboulette"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["10 tempura","10 palta","10 nori","10 ciboulette","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 }
+      { id:"EX-HR1", categoriaExpress:"Hand Roll", nombre:"Flash Hand Roll 1", precio:4000, piezas:"1 hand roll + 1 lata CCU", rolls:["Hand roll 1"], bebidaGrupo:"lata-ccu-350", bebidaTexto:"1 bebida lata CCU", bebidaCantidad:1, descripcion:["1 hand roll","1 bebida lata CCU"], tiempoPreparacion:MIN_HANDROLL },
+      { id:"EX-HR2", categoriaExpress:"Hand Roll", nombre:"Flash Hand Roll 2", precio:7800, piezas:"2 hand rolls + 2 latas CCU", rolls:["Hand roll 1","Hand roll 2"], bebidaGrupo:"lata-ccu-350", bebidaTexto:"2 bebidas latas CCU", bebidaCantidad:2, descripcion:["2 hand rolls","2 bebidas latas CCU"], tiempoPreparacion:MIN_HANDROLL*2 },
+      { id:"EX-HR4", categoriaExpress:"Hand Roll", nombre:"Flash Hand Roll 4", precio:13500, piezas:"4 hand rolls + 1 bebida 1 litro", rolls:["Hand roll 1","Hand roll 2","Hand roll 3","Hand roll 4"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["4 hand rolls","1 bebida 1 litro"], tiempoPreparacion:MIN_HANDROLL*4 },
+      { id:"EX-HR5", categoriaExpress:"Hand Roll", nombre:"Flash Hand Roll 5", precio:16500, piezas:"5 hand rolls + 1 bebida 1 litro", rolls:["Hand roll 1","Hand roll 2","Hand roll 3","Hand roll 4","Hand roll 5"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["5 hand rolls","1 bebida 1 litro"], tiempoPreparacion:MIN_HANDROLL*5 },
+
+      { id:"EX-SU20-1", categoriaExpress:"Sushi", nombre:"Flash 20 Envueltos 1", precio:8500, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en tempura","10 envueltos en queso"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en tempura","10 envueltos en queso","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
+      { id:"EX-SU20-2", categoriaExpress:"Sushi", nombre:"Flash 20 Envueltos 2", precio:7500, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en nori","10 envueltos en ciboulette"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en nori","10 envueltos en ciboulette","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
+      { id:"EX-SU20-3", categoriaExpress:"Sushi", nombre:"Flash 20 Envueltos 3", precio:8000, piezas:"20 envueltos + 1 bebida de 1/2L", rolls:["10 envueltos en tempura","10 envueltos en sésamo"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L", bebidaCantidad:1, descripcion:["10 envueltos en tempura","10 envueltos en sésamo","1 bebida de 1/2L"], tiempoPreparacion:MIN_SUSHI_10*2 },
+      { id:"EX-SU40-1", categoriaExpress:"Sushi", nombre:"Flash 40 Envueltos 1", precio:15500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en tempura","10 envueltos en tempura","10 envueltos en queso","10 envueltos en queso"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["20 envueltos en tempura","20 envueltos en queso","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 },
+      { id:"EX-SU40-2", categoriaExpress:"Sushi", nombre:"Flash 40 Envueltos 2", precio:13500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en nori","10 envueltos en sésamo","10 envueltos en ciboulette","10 envueltos en merkén"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["10 nori","10 sésamo","10 ciboulette","10 merkén","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 },
+      { id:"EX-SU40-3", categoriaExpress:"Sushi", nombre:"Flash 40 Envueltos 3", precio:14500, piezas:"40 envueltos + 1 bebida 1 litro", rolls:["10 envueltos en tempura","10 envueltos en palta","10 envueltos en nori","10 envueltos en ciboulette"], bebidaGrupo:"botella-1l", bebidaTexto:"1 bebida 1 litro", bebidaCantidad:1, descripcion:["10 tempura","10 palta","10 nori","10 ciboulette","1 bebida 1 litro"], tiempoPreparacion:MIN_SUSHI_10*4 },
+
+      { id:"EX-ACEV1", categoriaExpress:"Acevichados", nombre:"Flash Acevichados 1", precio:5900, piezas:"10 piezas acevichadas + 1 lata Coca-Cola", rolls:["10 piezas acevichadas"], bebidaGrupo:"lata-coca-350", bebidaTexto:"1 bebida lata Coca-Cola", bebidaCantidad:1, descripcion:["10 piezas acevichadas","1 bebida en lata Coca-Cola"], tiempoPreparacion:MIN_ACEVICHADO },
+      { id:"EX-ACEV2", categoriaExpress:"Acevichados", nombre:"Flash Acevichados 2", precio:11000, piezas:"20 piezas acevichadas + 1 bebida 1/2L Coca-Cola", rolls:["10 piezas acevichadas","10 piezas acevichadas"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L Coca-Cola", bebidaCantidad:1, descripcion:["20 piezas acevichadas","1 bebida de 1/2L Coca-Cola"], tiempoPreparacion:MIN_ACEVICHADO*2 },
+
+      { id:"EX-BURGER1", categoriaExpress:"Sushi Burgers", nombre:"Flash Sushi Burger 1", precio:6500, piezas:"1 sushi burger + 1 lata Coca-Cola", rolls:["Sushi burger 1"], bebidaGrupo:"lata-coca-350", bebidaTexto:"1 bebida lata Coca-Cola", bebidaCantidad:1, descripcion:["1 sushi burger","1 bebida en lata Coca-Cola"], tiempoPreparacion:MIN_SUSHIBURGER },
+      { id:"EX-BURGER2", categoriaExpress:"Sushi Burgers", nombre:"Flash Sushi Burger 2", precio:11500, piezas:"2 sushi burgers + 1 bebida 1/2L Coca-Cola", rolls:["Sushi burger 1","Sushi burger 2"], bebidaGrupo:"botella-591", bebidaTexto:"1 bebida de 1/2L Coca-Cola", bebidaCantidad:1, descripcion:["2 sushi burgers","1 bebida de 1/2L Coca-Cola"], tiempoPreparacion:MIN_SUSHIBURGER*2 }
     ];
+
 
     let carrito = [];
     let itemActivo = null;
@@ -2500,24 +2546,43 @@ async function cargarIngredientesDesdeFirebase() {
       const grid = document.getElementById("promoExpressGrid");
       if (!grid) return;
 
-      grid.innerHTML = promosExpress.map(promo => `
-        <section class="card express-card">
-          <div class="express-head">
-            <div>
-              <h2>${promo.nombre}</h2>
-              <div class="express-tag">${promo.piezas}</div>
-            </div>
-            <div class="express-price">${formatCLP(promo.precio)}</div>
+      const grupos = [
+        { nombre: "Hand Roll", nota: "Promos rápidas de hand roll + bebida" },
+        { nombre: "Sushi", nota: "Promos de envueltos + bebida" },
+        { nombre: "Acevichados", nota: "Promos acevichadas + Coca-Cola" },
+        { nombre: "Sushi Burgers", nota: "Promos de sushi burger + Coca-Cola" }
+      ];
+
+      grid.innerHTML = grupos.map(grupo => {
+        const items = promosExpress.filter(p => p.categoriaExpress === grupo.nombre);
+        if (!items.length) return "";
+
+        return `
+          <div class="express-category-title">
+            ${grupo.nombre}
+            <small>${grupo.nota}</small>
           </div>
-          <div class="express-body">
-            <span class="express-drink-pill">🥤 ${promo.bebidaTexto}</span>
-            <ul class="express-list">
-              ${promo.descripcion.map(i => `<li>${i}</li>`).join("")}
-            </ul>
-            <button class="choose-btn" onclick="abrirPromoExpress('${promo.id}')">Elegir esta promo express</button>
-          </div>
-        </section>
-      `).join("");
+
+          ${items.map(promo => `
+            <section class="card express-card">
+              <div class="express-head">
+                <div>
+                  <h2>${promo.nombre}</h2>
+                  <div class="express-tag">${promo.piezas}</div>
+                </div>
+                <div class="express-price">${formatCLP(promo.precio)}</div>
+              </div>
+              <div class="express-body">
+                <span class="express-drink-pill">🥤 ${promo.bebidaTexto}</span>
+                <ul class="express-list">
+                  ${promo.descripcion.map(i => `<li>${i}</li>`).join("")}
+                </ul>
+                <button class="choose-btn" onclick="abrirPromoExpress('${promo.id}')">Elegir esta promo flash</button>
+              </div>
+            </section>
+          `).join("")}
+        `;
+      }).join("");
     }
 
     function abrirPromoExpress(id, datosExistentes = null, indexEditar = null) {
@@ -2535,12 +2600,31 @@ async function cargarIngredientesDesdeFirebase() {
       setTimeout(() => document.getElementById("configArea").scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     }
 
+    function htmlSelectsBebidasPromoExpress(promo, datosExistentes = null) {
+      const grupo = grupoBebidaPorId(promo.bebidaGrupo);
+      const cantidad = Number(promo.bebidaCantidad || 1);
+
+      return Array.from({ length: cantidad }, (_, i) => {
+        const sufijo = `-express-${i}`;
+        const valorGuardado = datosExistentes?.bebidasIncluidas?.[i]?.bebidaId ||
+          (i === 0 ? datosExistentes?.bebidaIncluida?.bebidaId : "");
+
+        return `
+          <div class="express-drink-select-box">
+            <label>Bebida ${cantidad > 1 ? i + 1 : ""}</label>
+            <select id="bebidaSelect-${promo.bebidaGrupo}${sufijo}" onchange="actualizarVistaBebidaGrupo('${promo.bebidaGrupo}', '${sufijo}')">
+              ${grupo ? opcionesBebidaPorGrupo(grupo) : `<option value="">No hay bebidas configuradas</option>`}
+            </select>
+            <div id="bebidaStock-${promo.bebidaGrupo}${sufijo}" class="bebida-stock-note">Selecciona una bebida.</div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function renderConfigPromoExpress(datosExistentes = null) {
       const promo = itemActivo;
       const area = document.getElementById("configArea");
       const textoBoton = editandoIndex !== null ? "Guardar cambios" : `Agregar ${promo.nombre}`;
-      const grupo = grupoBebidaPorId(promo.bebidaGrupo);
-      const sufijo = "-express";
 
       area.innerHTML = `
         <section class="card config-card active">
@@ -2561,11 +2645,7 @@ async function cargarIngredientesDesdeFirebase() {
             <div class="express-config-drink">
               <h3>🥤 Bebida incluida</h3>
               <div class="small">Selecciona ${promo.bebidaTexto}. Se descontará del inventario al confirmar.</div>
-              <label>Bebida</label>
-              <select id="bebidaSelect-${promo.bebidaGrupo}${sufijo}" onchange="actualizarVistaBebidaGrupo('${promo.bebidaGrupo}', '${sufijo}')">
-                ${grupo ? opcionesBebidaPorGrupo(grupo) : `<option value="">No hay bebidas configuradas</option>`}
-              </select>
-              <div id="bebidaStock-${promo.bebidaGrupo}${sufijo}" class="bebida-stock-note">Selecciona una bebida.</div>
+              ${htmlSelectsBebidasPromoExpress(promo, datosExistentes)}
             </div>
 
             <button class="add-btn" onclick="guardarPromoExpress('${promo.id}')">🛒 ${textoBoton}</button>
@@ -2574,16 +2654,63 @@ async function cargarIngredientesDesdeFirebase() {
       `;
 
       promo.rolls.forEach((_, index) => actualizarIngredientes(promo.id, index));
-      actualizarVistaBebidaGrupo(promo.bebidaGrupo, sufijo);
+
+      for (let i = 0; i < Number(promo.bebidaCantidad || 1); i++) {
+        const sufijo = `-express-${i}`;
+        const select = document.getElementById(`bebidaSelect-${promo.bebidaGrupo}${sufijo}`);
+        const valorGuardado = datosExistentes?.bebidasIncluidas?.[i]?.bebidaId ||
+          (i === 0 ? datosExistentes?.bebidaIncluida?.bebidaId : "");
+
+        if (select && valorGuardado) select.value = valorGuardado;
+        actualizarVistaBebidaGrupo(promo.bebidaGrupo, sufijo);
+      }
 
       if (datosExistentes) {
         cargarDatosEnFormulario(promo.id, datosExistentes);
-        const select = document.getElementById(`bebidaSelect-${promo.bebidaGrupo}${sufijo}`);
-        if (select && datosExistentes.bebidaIncluida?.bebidaId) {
-          select.value = datosExistentes.bebidaIncluida.bebidaId;
-          actualizarVistaBebidaGrupo(promo.bebidaGrupo, sufijo);
+      }
+    }
+
+    function obtenerBebidasPromoExpress(promo) {
+      const cantidad = Number(promo.bebidaCantidad || 1);
+      const seleccionadas = [];
+
+      for (let i = 0; i < cantidad; i++) {
+        const bebida = bebidaSeleccionadaPorGrupo(promo.bebidaGrupo, `-express-${i}`);
+
+        if (!bebida) {
+          alert(`Debes seleccionar la bebida ${cantidad > 1 ? i + 1 : ""} incluida en la promo flash.`);
+          return null;
+        }
+
+        if (!bebidaDisponible(bebida)) {
+          alert(`${bebida.nombre} no está disponible por el momento.`);
+          return null;
+        }
+
+        seleccionadas.push(bebida);
+      }
+
+      const conteo = new Map();
+      seleccionadas.forEach(bebida => {
+        conteo.set(bebida.id, (conteo.get(bebida.id) || 0) + 1);
+      });
+
+      for (const [bebidaId, cant] of conteo.entries()) {
+        const bebida = seleccionadas.find(b => b.id === bebidaId);
+        const stock = Number(bebida?.stock || 0);
+
+        if (stock < cant) {
+          alert(`No hay stock suficiente de ${bebida.nombre}. Disponible: ${stock}.`);
+          return null;
         }
       }
+
+      return seleccionadas.map(bebida => ({
+        bebidaId: bebida.id,
+        nombre: bebida.nombre,
+        formato: grupoBebidaPorId(promo.bebidaGrupo)?.titulo || nombreCategoriaBebida(bebida.categoria),
+        cantidad: 1
+      }));
     }
 
     async function guardarPromoExpress(id) {
@@ -2599,25 +2726,8 @@ async function cargarIngredientesDesdeFirebase() {
       const datos = recolectarRolls(id, promo.rolls);
       if (!datos) return;
 
-      const bebida = bebidaSeleccionadaPorGrupo(promo.bebidaGrupo, "-express");
-
-      if (!bebida) {
-        alert("Debes seleccionar la bebida incluida en la promo express.");
-        return;
-      }
-
-      if (!bebidaDisponible(bebida)) {
-        alert("La bebida seleccionada no está disponible por el momento.");
-        return;
-      }
-
-      const cantidadBebida = Number(promo.bebidaCantidad || 1);
-      const stock = Number(bebida.stock || 0);
-
-      if (stock < cantidadBebida) {
-        alert(`No hay stock suficiente de ${bebida.nombre}. Disponible: ${stock}.`);
-        return;
-      }
+      const bebidasIncluidas = obtenerBebidasPromoExpress(promo);
+      if (!bebidasIncluidas) return;
 
       const item = {
         id: promo.id,
@@ -2633,12 +2743,8 @@ async function cargarIngredientesDesdeFirebase() {
         cantidad: 1,
         precioUnitario: promo.precio + datos.extraSalmon + datos.extraCuarto + datos.extraPolloCamaron,
         precioFinal: promo.precio + datos.extraSalmon + datos.extraCuarto + datos.extraPolloCamaron,
-        bebidaIncluida: {
-          bebidaId: bebida.id,
-          nombre: bebida.nombre,
-          formato: grupoBebidaPorId(promo.bebidaGrupo)?.titulo || nombreCategoriaBebida(bebida.categoria),
-          cantidad: cantidadBebida
-        },
+        bebidasIncluidas,
+        bebidaIncluida: bebidasIncluidas[0] || null,
         tiempoPreparacion: Number(promo.tiempoPreparacion || 0)
       };
 
@@ -3290,7 +3396,7 @@ if (descuentoItem > 0) {
                   ? `🥤 ${item.nombre} · Cantidad: ${cantidadItem(item)}`
                   : (item.detalleRolls || []).map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(ing => ingredienteDisponible(ing) ? limpiarIngrediente(ing) : `❌ ${limpiarIngrediente(ing)} (agotado)`).join(", ")}`).join("<br>")
                 }
-                ${item.tipo === "promoExpress" && item.bebidaIncluida ? `<br>🥤 Bebida incluida: ${item.bebidaIncluida.nombre} ${item.bebidaIncluida.formato || ""} · Cantidad: ${item.bebidaIncluida.cantidad || 1}` : ""}
+                ${item.tipo === "promoExpress" && (item.bebidasIncluidas || item.bebidaIncluida) ? `<br>🥤 Bebidas incluidas: ${(item.bebidasIncluidas || [item.bebidaIncluida]).filter(Boolean).map(b => `${b.nombre} ${b.formato || ""}`).join(" / ")}` : ""}
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 ${item.extraPolloCamaron ? `<br>Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}` : ""}
@@ -4005,12 +4111,16 @@ function cerrarConfirmacion() {
           sumarBebida(item.bebidaId, item.nombre, item.cantidad || 1);
         }
 
-        if (item.tipo === "promoExpress" && item.bebidaIncluida?.bebidaId) {
-          sumarBebida(
-            item.bebidaIncluida.bebidaId,
-            `${item.bebidaIncluida.nombre || "Bebida"} ${item.bebidaIncluida.formato || ""}`.trim(),
-            item.bebidaIncluida.cantidad || 1
-          );
+        if (item.tipo === "promoExpress") {
+          const bebidasPromo = item.bebidasIncluidas || (item.bebidaIncluida ? [item.bebidaIncluida] : []);
+
+          bebidasPromo.forEach(bebida => {
+            sumarBebida(
+              bebida.bebidaId,
+              `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim(),
+              bebida.cantidad || 1
+            );
+          });
         }
       });
 
@@ -4256,8 +4366,11 @@ let mensaje =
             mensaje += `- ${roll.nombre}: ${roll.ingredientes.map(limpiarIngrediente).join(", ")}%0A`;
           });
 
-          if (item.tipo === "promoExpress" && item.bebidaIncluida) {
-            mensaje += `- Bebida incluida: ${item.bebidaIncluida.nombre} ${item.bebidaIncluida.formato || ""} · Cantidad: ${item.bebidaIncluida.cantidad || 1}%0A`;
+          if (item.tipo === "promoExpress") {
+            const bebidasPromo = item.bebidasIncluidas || (item.bebidaIncluida ? [item.bebidaIncluida] : []);
+            bebidasPromo.forEach((bebida, idx) => {
+              mensaje += `- Bebida incluida${bebidasPromo.length > 1 ? " " + (idx + 1) : ""}: ${bebida.nombre} ${bebida.formato || ""}%0A`;
+            });
           }
         }
 
