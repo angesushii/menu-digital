@@ -423,7 +423,7 @@
       <div class="toggle-head" onclick="togglePanel('resumenBebidasPanel')">
         <div>
           <h2>💰 Resumen financiero bebidas</h2>
-          <div class="muted">Ventas de bebidas sueltas y conteo de bebidas incluidas en promos flash.</div>
+          <div class="muted">Ventas de bebidas sueltas y valor interno de bebidas incluidas en promos flash.</div>
         </div>
         <button type="button" class="toggle-btn">Ver / ocultar</button>
       </div>
@@ -605,6 +605,17 @@
       return prod?.tipo === "bebida" || String(prod?.categoria || "").toLowerCase() === "bebida";
     }
 
+    function precioPromoBebidaFallback(bebida = {}) {
+      const formato = String(bebida.formato || bebida.texto || bebida.nombre || "").toLowerCase();
+
+      if (formato.includes("lata ccu")) return 1000;
+      if (formato.includes("lata coca")) return 1200;
+      if (formato.includes("591") || formato.includes("1/2")) return 1500;
+      if (formato.includes("1 litro") || formato.includes("1l")) return 1800;
+
+      return 0;
+    }
+
     function bebidasDeProducto(prod) {
       if (esProductoBebida(prod)) {
         return [{
@@ -617,11 +628,16 @@
       if (prod?.tipo === "promoExpress") {
         const bebidasIncluidas = prod.bebidasIncluidas || (prod.bebidaIncluida ? [prod.bebidaIncluida] : []);
 
-        return bebidasIncluidas.filter(Boolean).map(bebida => ({
-          nombre: bebida.texto || `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim(),
-          cantidad: Number(bebida.cantidad || 1),
-          total: 0
-        }));
+        return bebidasIncluidas.filter(Boolean).map(bebida => {
+          const cantidad = Number(bebida.cantidad || 1);
+          const precioUnitario = Number(bebida.precioPromo || precioPromoBebidaFallback(bebida) || 0);
+
+          return {
+            nombre: bebida.texto || `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim(),
+            cantidad,
+            total: precioUnitario * cantidad
+          };
+        });
       }
 
       return [];
@@ -632,9 +648,8 @@
     }
 
     function totalBebidasPedido(pedido) {
-      return (pedido.productos || []).reduce((acc, prod) => {
-        if (!esProductoBebida(prod)) return acc;
-        return acc + Number(prod.precioFinal || 0);
+      return bebidasDePedido(pedido).reduce((acc, bebida) => {
+        return acc + Number(bebida.total || 0);
       }, 0);
     }
 
