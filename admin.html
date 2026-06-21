@@ -755,27 +755,41 @@
     function bebidasDelPedidoParaReponer(pedido) {
       const mapa = new Map();
 
-      (pedido.productos || [])
-        .filter(prod => esProductoBebida(prod))
-        .forEach(prod => {
-          const id = prod.bebidaId || "";
-          const cantidad = Number(prod.cantidad || 1);
+      function sumarBebida(id, nombre, cantidad) {
+        if (!id) {
+          console.warn("Bebida sin bebidaId, no se puede reponer automáticamente:", { nombre, cantidad });
+          return;
+        }
 
-          if (!id) {
-            console.warn("Bebida sin bebidaId, no se puede reponer automáticamente:", prod);
-            return;
-          }
+        if (!mapa.has(id)) {
+          mapa.set(id, {
+            bebidaId: id,
+            nombre: nombre || "Bebida",
+            cantidad: 0
+          });
+        }
 
-          if (!mapa.has(id)) {
-            mapa.set(id, {
-              bebidaId: id,
-              nombre: prod.nombre || "Bebida",
-              cantidad: 0
-            });
-          }
+        mapa.get(id).cantidad += Number(cantidad || 1);
+      }
 
-          mapa.get(id).cantidad += cantidad;
-        });
+      (pedido.productos || []).forEach(prod => {
+        if (esProductoBebida(prod)) {
+          sumarBebida(prod.bebidaId || "", prod.nombre || "Bebida", prod.cantidad || 1);
+          return;
+        }
+
+        if (prod?.tipo === "promoExpress") {
+          const bebidasIncluidas = prod.bebidasIncluidas || (prod.bebidaIncluida ? [prod.bebidaIncluida] : []);
+
+          bebidasIncluidas.filter(Boolean).forEach(bebida => {
+            sumarBebida(
+              bebida.bebidaId || "",
+              bebida.texto || `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim(),
+              bebida.cantidad || 1
+            );
+          });
+        }
+      });
 
       return Array.from(mapa.values());
     }
@@ -838,17 +852,45 @@
       return Number(prod?.descuentoPromoA || 0);
     }
 
+    function precioPromoBebidaFallback(bebida = {}) {
+      const formato = String(bebida.formato || bebida.texto || bebida.nombre || "").toLowerCase();
+
+      if (formato.includes("lata ccu")) return 1000;
+      if (formato.includes("lata coca")) return 1200;
+      if (formato.includes("591") || formato.includes("1/2")) return 1500;
+      if (formato.includes("1 litro") || formato.includes("1l")) return 1800;
+
+      return 0;
+    }
+
+    function totalBebidasIncluidasPromo(prod) {
+      if (prod?.tipo !== "promoExpress") return 0;
+
+      const bebidasIncluidas = prod.bebidasIncluidas || (prod.bebidaIncluida ? [prod.bebidaIncluida] : []);
+
+      return bebidasIncluidas.filter(Boolean).reduce((acc, bebida) => {
+        const cantidad = Number(bebida.cantidad || 1);
+        const precioUnitario = Number(bebida.precioPromo || precioPromoBebidaFallback(bebida) || 0);
+        return acc + precioUnitario * cantidad;
+      }, 0);
+    }
+
     function totalSushiPedido(pedido) {
       return (pedido.productos || []).reduce((acc, prod) => {
         if (esProductoBebida(prod)) return acc;
-        return acc + totalProducto(prod) - descuentoProducto(prod);
+
+        const totalBebidasPromo = totalBebidasIncluidasPromo(prod);
+        return acc + totalProducto(prod) - descuentoProducto(prod) - totalBebidasPromo;
       }, 0);
     }
 
     function totalBebidasPedido(pedido) {
       return (pedido.productos || []).reduce((acc, prod) => {
-        if (!esProductoBebida(prod)) return acc;
-        return acc + totalProducto(prod);
+        if (esProductoBebida(prod)) {
+          return acc + totalProducto(prod);
+        }
+
+        return acc + totalBebidasIncluidasPromo(prod);
       }, 0);
     }
 
@@ -863,8 +905,14 @@
     function contarUnidadesBebidas(pedidos) {
       return pedidos.reduce((acc, pedido) => {
         return acc + (pedido.productos || []).reduce((sub, prod) => {
-          if (!esProductoBebida(prod)) return sub;
-          return sub + Number(prod.cantidad || 1);
+          if (esProductoBebida(prod)) return sub + Number(prod.cantidad || 1);
+
+          if (prod?.tipo === "promoExpress") {
+            const bebidasIncluidas = prod.bebidasIncluidas || (prod.bebidaIncluida ? [prod.bebidaIncluida] : []);
+            return sub + bebidasIncluidas.filter(Boolean).reduce((a, b) => a + Number(b.cantidad || 1), 0);
+          }
+
+          return sub;
         }, 0);
       }, 0);
     }
