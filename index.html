@@ -1898,6 +1898,17 @@
       return bebida && bebida.activa !== false && Number(bebida.stock || 0) > 0;
     }
 
+    function textoBebidaCompleto(bebida, formato = "") {
+      const nombre = String(bebida?.nombre || "").trim();
+      const fmt = String(formato || nombreCategoriaBebida(bebida?.categoria) || "").trim();
+
+      if (!nombre && !fmt) return "Bebida";
+      if (!fmt) return nombre;
+      if (!nombre) return fmt;
+
+      return `${nombre} ${fmt}`.trim();
+    }
+
     function toggleBebidas() {
       const section = document.getElementById("bebidasSection");
       const btn = document.getElementById("toggleBebidasBtn");
@@ -2705,12 +2716,17 @@ async function cargarIngredientesDesdeFirebase() {
         }
       }
 
-      return seleccionadas.map(bebida => ({
-        bebidaId: bebida.id,
-        nombre: bebida.nombre,
-        formato: grupoBebidaPorId(promo.bebidaGrupo)?.titulo || nombreCategoriaBebida(bebida.categoria),
-        cantidad: 1
-      }));
+      return seleccionadas.map(bebida => {
+        const formato = grupoBebidaPorId(promo.bebidaGrupo)?.titulo || nombreCategoriaBebida(bebida.categoria);
+
+        return {
+          bebidaId: bebida.id,
+          nombre: bebida.nombre,
+          formato,
+          texto: textoBebidaCompleto(bebida, formato),
+          cantidad: 1
+        };
+      });
     }
 
     async function guardarPromoExpress(id) {
@@ -3396,7 +3412,7 @@ if (descuentoItem > 0) {
                   ? `🥤 ${item.nombre} · Cantidad: ${cantidadItem(item)}`
                   : (item.detalleRolls || []).map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(ing => ingredienteDisponible(ing) ? limpiarIngrediente(ing) : `❌ ${limpiarIngrediente(ing)} (agotado)`).join(", ")}`).join("<br>")
                 }
-                ${item.tipo === "promoExpress" && (item.bebidasIncluidas || item.bebidaIncluida) ? `<br>🥤 Bebidas incluidas: ${(item.bebidasIncluidas || [item.bebidaIncluida]).filter(Boolean).map(b => `${b.nombre} ${b.formato || ""}`).join(" / ")}` : ""}
+                ${item.tipo === "promoExpress" && (item.bebidasIncluidas || item.bebidaIncluida) ? `<br>🥤 Bebidas incluidas: ${(item.bebidasIncluidas || [item.bebidaIncluida]).filter(Boolean).map(b => b.texto || `${b.nombre || "Bebida"} ${b.formato || ""}`.trim()).join(" / ")}` : ""}
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 ${item.extraPolloCamaron ? `<br>Combinación Pollo + Camarón: ${formatCLP(item.extraPolloCamaron)}` : ""}
@@ -4117,7 +4133,7 @@ function cerrarConfirmacion() {
           bebidasPromo.forEach(bebida => {
             sumarBebida(
               bebida.bebidaId,
-              `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim(),
+              bebida.texto || `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim(),
               bebida.cantidad || 1
             );
           });
@@ -4369,7 +4385,7 @@ let mensaje =
           if (item.tipo === "promoExpress") {
             const bebidasPromo = item.bebidasIncluidas || (item.bebidaIncluida ? [item.bebidaIncluida] : []);
             bebidasPromo.forEach((bebida, idx) => {
-              mensaje += `- Bebida incluida${bebidasPromo.length > 1 ? " " + (idx + 1) : ""}: ${bebida.nombre} ${bebida.formato || ""}%0A`;
+              mensaje += `- Bebida incluida${bebidasPromo.length > 1 ? " " + (idx + 1) : ""}: ${bebida.texto || `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim()}%0A`;
             });
           }
         }
