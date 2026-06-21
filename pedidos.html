@@ -1118,8 +1118,8 @@ function clasificarIngrediente(nombre) {
   if (lower.includes("kanikama")) return { prioridad: 3, nombre: "kanikama" };
   if (lower.includes("salm")) return { prioridad: 4, nombre: "salmón" };
 
-if (lower.includes("philadelphia")) return { prioridad: 2, nombre: "queso" };
-if (lower.includes("gauda")) return { prioridad: 2, nombre: "queso gauda" };
+  if (lower.includes("philadelphia")) return { prioridad: 5, nombre: "queso" };
+  if (lower.includes("gauda")) return { prioridad: 6, nombre: "queso gauda" };
 
   if (lower.includes("palta")) return { prioridad: 7, nombre: "palta" };
 
@@ -1143,6 +1143,16 @@ function formatearIngredientesPedido(lista = []) {
   }
 
   return texto;
+}
+
+function bebidasIncluidasPedidoTexto(prod) {
+  const bebidasIncluidas = prod?.bebidasIncluidas || (prod?.bebidaIncluida ? [prod.bebidaIncluida] : []);
+
+  return bebidasIncluidas
+    .filter(Boolean)
+    .map(bebida => bebida.texto || `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim())
+    .filter(Boolean)
+    .join(" / ");
 }
 
     function getFechaObj(pedido) {
@@ -1302,6 +1312,10 @@ Gracias por preferir Sushi Ange ❤️`;
                   ${(prod.detalleRolls || []).map(roll => `
                     <div class="detalle-roll">🍣 ${roll.nombre}: ${formatearIngredientesPedido(roll.ingredientes || [])}</div>
                   `).join("")}
+
+                  ${prod.tipo === "promoExpress" && bebidasIncluidasPedidoTexto(prod) ? `
+                    <div class="detalle-roll">🥤 Bebidas incluidas: ${bebidasIncluidasPedidoTexto(prod)}</div>
+                  ` : ""}
 
                   ${prod.extraSalmon ? `<div class="muted">Adicional salmón: ${formatCLP(prod.extraSalmon)}</div>` : ""}
                   ${prod.extraCuarto ? `<div class="muted">Ingrediente extra: ${formatCLP(prod.extraCuarto)}</div>` : ""}
