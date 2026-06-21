@@ -423,7 +423,7 @@
       <div class="toggle-head" onclick="togglePanel('resumenBebidasPanel')">
         <div>
           <h2>💰 Resumen financiero bebidas</h2>
-          <div class="muted">Ventas de bebidas separadas del sushi.</div>
+          <div class="muted">Ventas de bebidas sueltas y conteo de bebidas incluidas en promos flash.</div>
         </div>
         <button type="button" class="toggle-btn">Ver / ocultar</button>
       </div>
@@ -605,6 +605,32 @@
       return prod?.tipo === "bebida" || String(prod?.categoria || "").toLowerCase() === "bebida";
     }
 
+    function bebidasDeProducto(prod) {
+      if (esProductoBebida(prod)) {
+        return [{
+          nombre: prod.nombre || "Bebida",
+          cantidad: Number(prod.cantidad || 1),
+          total: Number(prod.precioFinal || 0)
+        }];
+      }
+
+      if (prod?.tipo === "promoExpress") {
+        const bebidasIncluidas = prod.bebidasIncluidas || (prod.bebidaIncluida ? [prod.bebidaIncluida] : []);
+
+        return bebidasIncluidas.filter(Boolean).map(bebida => ({
+          nombre: bebida.texto || `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim(),
+          cantidad: Number(bebida.cantidad || 1),
+          total: 0
+        }));
+      }
+
+      return [];
+    }
+
+    function bebidasDePedido(pedido) {
+      return (pedido.productos || []).flatMap(bebidasDeProducto);
+    }
+
     function totalBebidasPedido(pedido) {
       return (pedido.productos || []).reduce((acc, prod) => {
         if (!esProductoBebida(prod)) return acc;
@@ -618,9 +644,8 @@
 
     function contarUnidadesBebidas(pedidos) {
       return pedidos.reduce((acc, pedido) => {
-        return acc + (pedido.productos || []).reduce((sub, prod) => {
-          if (!esProductoBebida(prod)) return sub;
-          return sub + Number(prod.cantidad || 1);
+        return acc + bebidasDePedido(pedido).reduce((sub, bebida) => {
+          return sub + Number(bebida.cantidad || 1);
         }, 0);
       }, 0);
     }
@@ -629,16 +654,15 @@
       const conteo = {};
 
       pedidos.forEach(pedido => {
-        (pedido.productos || []).forEach(prod => {
-          if (!esProductoBebida(prod)) return;
-
-          const nombre = prod.nombre || "Bebida";
-          conteo[nombre] = (conteo[nombre] || 0) + Number(prod.cantidad || 1);
+        bebidasDePedido(pedido).forEach(bebida => {
+          const nombre = bebida.nombre || "Bebida";
+          conteo[nombre] = (conteo[nombre] || 0) + Number(bebida.cantidad || 1);
         });
       });
 
       return Object.entries(conteo).sort((a, b) => b[1] - a[1]);
     }
+
 
     function renderTopBebidas(entradas) {
       const el = document.getElementById("topBebidasDia");
