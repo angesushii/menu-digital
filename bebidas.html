@@ -124,6 +124,88 @@
       color: var(--rojo);
     }
 
+    .pedidos-bebidas-toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .pedidos-bebidas-toolbar button {
+      background: #111;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .pedidos-bebidas-lista {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .pedido-bebida-card {
+      background: white;
+      border: 1px solid #eee;
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.07);
+    }
+
+    .pedido-bebida-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 9px;
+      margin-bottom: 9px;
+    }
+
+    .pedido-bebida-head strong {
+      color: var(--rojo);
+      font-size: 18px;
+    }
+
+    .pedido-bebida-total {
+      color: #0369a1;
+      font-weight: 900;
+      font-size: 18px;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .pedido-bebida-item {
+      background: #f8f8f8;
+      border-radius: 12px;
+      padding: 9px;
+      margin-top: 7px;
+      line-height: 1.35;
+      font-weight: 800;
+    }
+
+    .pedido-bebida-item small {
+      display: block;
+      color: #666;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+
+    @media(max-width:760px) {
+      .pedidos-bebidas-toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .pedido-bebida-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .pedido-bebida-total {
+        text-align: left;
+      }
+    }
+
     @media(max-width:760px) {
       .toggle-head {
         flex-direction: column;
@@ -467,6 +549,45 @@
     </section>
 
     <section class="card toggle-card">
+      <div class="toggle-head" onclick="togglePanel('pedidosBebidasPanel')">
+        <div>
+          <h2>📋 Pedidos de bebidas</h2>
+          <div class="muted">Revisa por fecha sólo las bebidas vendidas o incluidas en promos flash.</div>
+        </div>
+        <button type="button" class="toggle-btn">Ver / ocultar</button>
+      </div>
+
+      <div id="pedidosBebidasPanel" class="toggle-body">
+        <div class="pedidos-bebidas-toolbar">
+          <div>
+            <label>Fecha</label>
+            <input id="fechaPedidosBebidas" type="date" />
+          </div>
+          <button type="button" onclick="actualizarVistaPedidosBebidas()">Actualizar</button>
+        </div>
+
+        <div class="resumen-grid">
+          <div class="resumen-box">
+            <span>Pedidos con bebidas</span>
+            <strong id="pedidosBebidasCantidad">0</strong>
+          </div>
+          <div class="resumen-box">
+            <span>Unidades en la fecha</span>
+            <strong id="pedidosBebidasUnidades">0</strong>
+          </div>
+          <div class="resumen-box">
+            <span>Total bebidas fecha</span>
+            <strong id="pedidosBebidasTotal">$0</strong>
+          </div>
+        </div>
+
+        <div id="pedidosBebidasLista" class="pedidos-bebidas-lista">
+          <div class="empty">Selecciona una fecha para revisar pedidos con bebidas.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card toggle-card">
       <div class="toggle-head" onclick="togglePanel('inventarioPanel')">
         <div>
           <h2>📦 Inventario</h2>
@@ -601,6 +722,17 @@
       return fechaLocalYYYYMMDD(getFechaObj(pedido));
     }
 
+    function obtenerHoraLocalPedido(pedido) {
+      const fecha = getFechaObj(pedido);
+      if (!fecha) return "";
+
+      return fecha.toLocaleTimeString("es-CL", {
+        timeZone: "America/Santiago",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
     function esProductoBebida(prod) {
       return prod?.tipo === "bebida" || String(prod?.categoria || "").toLowerCase() === "bebida";
     }
@@ -618,10 +750,16 @@
 
     function bebidasDeProducto(prod) {
       if (esProductoBebida(prod)) {
+        const cantidad = Number(prod.cantidad || 1);
+        const total = Number(prod.precioFinal || 0);
+
         return [{
           nombre: prod.nombre || "Bebida",
-          cantidad: Number(prod.cantidad || 1),
-          total: Number(prod.precioFinal || 0)
+          cantidad,
+          total,
+          origen: "Bebida suelta",
+          producto: prod.nombre || "Bebida",
+          precioUnitario: cantidad > 0 ? Math.round(total / cantidad) : total
         }];
       }
 
@@ -635,7 +773,10 @@
           return {
             nombre: bebida.texto || `${bebida.nombre || "Bebida"} ${bebida.formato || ""}`.trim(),
             cantidad,
-            total: precioUnitario * cantidad
+            total: precioUnitario * cantidad,
+            origen: "Incluida en promo flash",
+            producto: prod.nombre || "Promo flash",
+            precioUnitario
           };
         });
       }
@@ -693,6 +834,70 @@
       )).join("");
     }
 
+    function renderPedidosBebidas(pedidos) {
+      const lista = document.getElementById("pedidosBebidasLista");
+      if (!lista) return;
+
+      const pedidosConBebidas = pedidos
+        .map(pedido => ({
+          pedido,
+          bebidas: bebidasDePedido(pedido),
+          total: totalBebidasPedido(pedido)
+        }))
+        .filter(item => item.bebidas.length > 0);
+
+      const unidades = pedidosConBebidas.reduce((acc, item) => {
+        return acc + item.bebidas.reduce((sub, bebida) => sub + Number(bebida.cantidad || 1), 0);
+      }, 0);
+
+      const total = pedidosConBebidas.reduce((acc, item) => acc + Number(item.total || 0), 0);
+
+      const cantidadEl = document.getElementById("pedidosBebidasCantidad");
+      const unidadesEl = document.getElementById("pedidosBebidasUnidades");
+      const totalEl = document.getElementById("pedidosBebidasTotal");
+
+      if (cantidadEl) cantidadEl.textContent = pedidosConBebidas.length;
+      if (unidadesEl) unidadesEl.textContent = unidades;
+      if (totalEl) totalEl.textContent = formatCLP(total);
+
+      if (!pedidosConBebidas.length) {
+        lista.innerHTML = `<div class="empty">No hay pedidos con bebidas para esta fecha.</div>`;
+        return;
+      }
+
+      lista.innerHTML = pedidosConBebidas.map(({ pedido, bebidas, total }) => {
+        const hora = obtenerHoraLocalPedido(pedido);
+        const telefono = pedido.telefonoWhatsApp || pedido.telefonoCliente || "";
+
+        return `
+          <div class="pedido-bebida-card">
+            <div class="pedido-bebida-head">
+              <div>
+                <strong>${pedido.cliente || "Cliente no indicado"}</strong>
+                <div class="muted">🕒 ${hora || "Hora no registrada"}${telefono ? ` · 📞 ${telefono}` : ""}</div>
+              </div>
+              <div class="pedido-bebida-total">${formatCLP(total)}</div>
+            </div>
+
+            ${bebidas.map(bebida => `
+              <div class="pedido-bebida-item">
+                🥤 ${bebida.nombre} x${Number(bebida.cantidad || 1)}
+                <small>${bebida.origen}${bebida.producto ? ` · ${bebida.producto}` : ""} · ${formatCLP(bebida.total)}</small>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function actualizarVistaPedidosBebidas() {
+      const fecha = document.getElementById("fechaPedidosBebidas")?.value || fechaHoyChile();
+      const pedidosFecha = pedidosGlobales.filter(p => obtenerFechaLocalPedido(p) === fecha);
+      renderPedidosBebidas(pedidosFecha);
+    }
+
+    window.actualizarVistaPedidosBebidas = actualizarVistaPedidosBebidas;
+
     function actualizarResumenFinancieroBebidas() {
       const hoy = fechaHoyChile();
       const semanaInicio = inicioSemanaLunes(hoy);
@@ -724,6 +929,7 @@
       document.getElementById("bebidaMasVendida").textContent = masVendida;
 
       renderTopBebidas(ranking);
+      actualizarVistaPedidosBebidas();
     }
 
     async function cargarResumenFinancieroBebidas() {
@@ -989,6 +1195,12 @@
         console.error(error);
         alert("No se pudo cargar el inventario de bebidas.");
       });
+    }
+
+    const fechaPedidosBebidasInput = document.getElementById("fechaPedidosBebidas");
+    if (fechaPedidosBebidasInput) {
+      fechaPedidosBebidasInput.value = fechaHoyChile();
+      fechaPedidosBebidasInput.addEventListener("change", actualizarVistaPedidosBebidas);
     }
 
     document.getElementById("guardarBtn").addEventListener("click", guardarBebida);
