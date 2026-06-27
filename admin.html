@@ -1236,6 +1236,8 @@ function calcularResumenProduccionDia(pedidos) {
       if (piezas) piezas.textContent = resumen.piezas;
       if (handrolls) handrolls.textContent = resumen.handrolls;
       if (sushiburgers) sushiburgers.textContent = resumen.sushiburgers;
+      if (totalProducido) totalProducido.textContent = resumen.totalProducido;
+      
     }
 
 
@@ -1308,7 +1310,7 @@ function calcularResumenProduccionDia(pedidos) {
       document.getElementById("bebidasTotalAcumulado").textContent = formatCLP(bebidasAcumulado);
       document.getElementById("bebidasUnidadesDia").textContent = bebidasUnidadesDia;
       document.getElementById("bebidaMasVendida").textContent = bebidaMasVendidaTexto;
-      document.getElementById("totalProducido").textContent = totalProducido;
+    
 
       const compTotalEl = document.getElementById("compensacionTotalDia");
       const totalAjustadoEl = document.getElementById("totalDiaAjustado");
