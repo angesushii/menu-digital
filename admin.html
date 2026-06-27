@@ -1226,17 +1226,15 @@ function calcularResumenProduccionDia(pedidos) {
       const piezas = document.getElementById("resumenPiezas");
       const handrolls = document.getElementById("resumenHandrolls");
       const sushiburgers = document.getElementById("resumenSushiburgers");
+      const total = document.getElementById("totalProducido");
 
-      const totalProducido =
-  (resumen.rolls * 10) +
-  (resumen.handrolls * 10) +
-  (resumen.sushiburgers * 10);
+      const totalProducido = (resumen.rolls * 10) + (resumen.handrolls * 10) + (resumen.sushiburgers * 10);
 
       if (rolls) rolls.textContent = resumen.rolls;
       if (piezas) piezas.textContent = resumen.piezas;
       if (handrolls) handrolls.textContent = resumen.handrolls;
       if (sushiburgers) sushiburgers.textContent = resumen.sushiburgers;
-      if (totalProducido) totalProducido.textContent = resumen.totalProducido;
+      if (total) total.textContent = totalProducido;
       
     }
 
