@@ -1170,41 +1170,49 @@
       return true;
     }
 
-    function calcularResumenProduccionDia(pedidos) {
-      let rolls = 0;
-      let piezas = 0;
-      let handrolls = 0;
-      let sushiburgers = 0;
+function calcularResumenProduccionDia(pedidos) {
+  let rolls = 0;
+  let piezas = 0;
+  let handrolls = 0;
+  let sushiburgers = 0;
 
-      pedidos.forEach(pedido => {
-        (pedido.productos || []).forEach(prod => {
-          const cantidad = Number(prod.cantidad || 1);
-          const detalleRolls = prod.detalleRolls || [];
+  pedidos.forEach(pedido => {
+    (pedido.productos || []).forEach(prod => {
+      const cantidad = Number(prod.cantidad || 1);
+      const detalleRolls = prod.detalleRolls || [];
 
-          if (esHandrollProducto(prod)) {
-            handrolls += cantidad;
-            return;
-          }
+      if (esHandrollProducto(prod)) {
+        if (detalleRolls.length) {
+          handrolls += detalleRolls.length * cantidad;
+        } else {
+          handrolls += cantidad;
+        }
+        return;
+      }
 
-          if (esSushiburgerProducto(prod)) {
-            const cantidadPorPiezas = String(prod.piezas || "").includes("2") ? 2 : 1;
-            sushiburgers += cantidad * cantidadPorPiezas;
-            return;
-          }
+      if (esSushiburgerProducto(prod)) {
+        if (detalleRolls.length) {
+          sushiburgers += detalleRolls.length * cantidad;
+        } else {
+          const cantidadPorPiezas = String(prod.piezas || "").includes("2") ? 2 : 1;
+          sushiburgers += cantidad * cantidadPorPiezas;
+        }
+        return;
+      }
 
-          if (detalleRolls.length) {
-            detalleRolls.forEach(roll => {
-              if (esRollContableComoPiezas(prod, roll)) {
-                rolls += 1;
-                piezas += 10;
-              }
-            });
+      if (detalleRolls.length) {
+        detalleRolls.forEach(roll => {
+          if (esRollContableComoPiezas(prod, roll)) {
+            rolls += 1;
+            piezas += 10;
           }
         });
-      });
+      }
+    });
+  });
 
-      return { rolls, piezas, handrolls, sushiburgers };
-    }
+  return { rolls, piezas, handrolls, sushiburgers };
+}
 
     function actualizarResumenDia(pedidosDia) {
       const resumen = calcularResumenProduccionDia(pedidosDia);
