@@ -738,6 +738,11 @@
             </div>
           </div>
 
+          <div class="resumen-dia-box">
+  <span>Total producido</span>
+  <strong id="totalProducido">0</strong>
+</div>
+
           <div class="resumen-dia-note">
             Se considera 1 roll = 10 piezas. Hand Rolls y Sushi Burgers se cuentan aparte.
           </div>
@@ -1222,6 +1227,11 @@ function calcularResumenProduccionDia(pedidos) {
       const handrolls = document.getElementById("resumenHandrolls");
       const sushiburgers = document.getElementById("resumenSushiburgers");
 
+      const totalProducido =
+  (resumen.rolls * 10) +
+  (resumen.handrolls * 10) +
+  (resumen.sushiburgers * 10);
+
       if (rolls) rolls.textContent = resumen.rolls;
       if (piezas) piezas.textContent = resumen.piezas;
       if (handrolls) handrolls.textContent = resumen.handrolls;
@@ -1298,6 +1308,7 @@ function calcularResumenProduccionDia(pedidos) {
       document.getElementById("bebidasTotalAcumulado").textContent = formatCLP(bebidasAcumulado);
       document.getElementById("bebidasUnidadesDia").textContent = bebidasUnidadesDia;
       document.getElementById("bebidaMasVendida").textContent = bebidaMasVendidaTexto;
+      document.getElementById("totalProducido").textContent = totalProducido;
 
       const compTotalEl = document.getElementById("compensacionTotalDia");
       const totalAjustadoEl = document.getElementById("totalDiaAjustado");
