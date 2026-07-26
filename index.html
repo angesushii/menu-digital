@@ -1456,7 +1456,7 @@
           <button class="type-btn" onclick="seleccionarTipoPersonalizado('sushi')">🍣 Sushi<br><small>10 piezas</small></button>
           <button class="type-btn" onclick="seleccionarTipoPersonalizado('handroll')">🌯 Hand roll<br><small>1 unidad</small></button>
           <button class="type-btn" onclick="seleccionarTipoPersonalizado('sushiburger')">🍔 Sushi burger<br><small>1 unidad</small></button>
-          <button class="type-btn" onclick="seleccionarTipoPersonalizado('acevichado')">🐟 Acevichado<br><small>10 piezas</small></button>
+          <button id="btnBuilderAcevichado" class="type-btn" onclick="seleccionarTipoPersonalizado('acevichado')">🐟 Acevichado<br><small>10 piezas</small></button>
         </div>
         <div id="builderConfig"></div>
       </div>
@@ -2168,8 +2168,12 @@
     let ingredientes = [];
     let ingredientesDisponibles = [];
     let ingredientesCargados = false;
+    let acevichadoActivoCarta = true;
 
-    function aplicarStockIngredientes(data = {}) {
+
+    
+
+function aplicarStockIngredientes(data = {}) {
       let lista = [];
       let disponibles = [];
 
@@ -2188,12 +2192,45 @@
         lista = [...disponibles];
       }
 
-  ingredientes = [...lista];
-  ingredientesDisponibles = [...disponibles];
-  ingredientesCargados = true;
+      ingredientes = [...lista];
+      ingredientesDisponibles = [...disponibles];
+      ingredientesCargados = true;
+
+      // NUEVO: Lee el estado del acevichado
+      acevichadoActivoCarta = data.acevichadoActivo !== false; 
 
       refrescarSelectsIngredientesAbiertos();
+      
+      // NUEVO: Ejecuta la magia visual
+      aplicarBloqueoAcevichadoVisual(); 
     }
+
+    // NUEVO: La función de la magia visual que va justo debajo
+    function aplicarBloqueoAcevichadoVisual() {
+      const btnBuilder = document.getElementById("btnBuilderAcevichado");
+      
+      if (btnBuilder) {
+         if (!acevichadoActivoCarta) {
+             btnBuilder.style.opacity = "0.4";
+             btnBuilder.style.pointerEvents = "none";
+             btnBuilder.style.filter = "grayscale(1)";
+             btnBuilder.innerHTML = `🐟 Acevichado<br><small style="color:var(--rojo);font-weight:900;">Agotado</small>`;
+         } else {
+             btnBuilder.style.opacity = "1";
+             btnBuilder.style.pointerEvents = "auto";
+             btnBuilder.style.filter = "none";
+             btnBuilder.innerHTML = `🐟 Acevichado<br><small>10 piezas</small>`;
+         }
+      }
+
+      // Refresca las listas de combos para que se pongan grises si es necesario
+      renderMenu();
+      renderPromosExpress();
+    }
+
+
+
+    
 
 async function esperarFirebase() {
   for (let i = 0; i < 50; i++) {
@@ -2530,24 +2567,34 @@ async function cargarIngredientesDesdeFirebase() {
       }
     }
 
-    function renderMenu() {
-      const grid = document.getElementById("promoGrid");
-      grid.innerHTML = promos.map(promo => `
-        <section class="card offer-card">
-          <div class="offer-head">
-            <h2>${promo.nombre}</h2>
-            <div class="offer-price">${formatCLP(promo.precio)}</div>
-          </div>
-          <div class="offer-body">
-            <span class="pieces-pill">${promo.piezas.toUpperCase()}</span>
-            <ul class="offer-list">
-              ${promo.rolls.map(i => `<li>${i}</li>`).join("")}
-            </ul>
-            <button class="choose-btn" onclick="abrirPromo('${promo.id}')">Elegir esta promo</button>
-          </div>
-        </section>
-      `).join("");
-    }
+function renderMenu() {
+  const grid = document.getElementById("promoGrid");
+  
+  grid.innerHTML = promos.map(promo => {
+    // La promo H es de Acevichado
+    const esAcevichado = promo.id === "H";
+    const agotado = esAcevichado && !acevichadoActivoCarta;
+    
+    const cardStyle = agotado ? 'opacity: 0.5; filter: grayscale(1); pointer-events: none;' : '';
+    const btnTexto = agotado ? 'Agotado' : 'Elegir esta promo';
+    const btnStyle = agotado ? 'background: #999; cursor: not-allowed; box-shadow: none;' : '';
+
+    return `
+    <section class="card offer-card" style="${cardStyle}">
+      <div class="offer-head">
+        <h2>${promo.nombre} ${agotado ? '<span style="color:var(--rojo); font-size:14px; background:white; padding:2px 6px; border-radius:4px; vertical-align:middle;">Agotado</span>' : ''}</h2>
+        <div class="offer-price">${formatCLP(promo.precio)}</div>
+      </div>
+      <div class="offer-body">
+        <span class="pieces-pill">${promo.piezas.toUpperCase()}</span>
+        <ul class="offer-list">
+          ${promo.rolls.map(i => `<li>${i}</li>`).join("")}
+        </ul>
+        <button class="choose-btn" style="${btnStyle}" ${agotado ? 'disabled' : ''} onclick="abrirPromo('${promo.id}')">${btnTexto}</button>
+      </div>
+    </section>
+  `}).join("");
+}
 
     function togglePromosExpress() {
       const section = document.getElementById("promoExpressSection");
@@ -2564,49 +2611,57 @@ async function cargarIngredientesDesdeFirebase() {
       }
     }
 
-    function renderPromosExpress() {
-      const grid = document.getElementById("promoExpressGrid");
-      if (!grid) return;
+function renderPromosExpress() {
+  const grid = document.getElementById("promoExpressGrid");
+  if (!grid) return;
 
-      const grupos = [
-        { nombre: "Hand Roll", nota: "Promos rápidas de hand roll + bebida" },
-        { nombre: "Sushi", nota: "Promos de envueltos + bebida" },
-        { nombre: "Acevichados", nota: "Promos acevichadas + Coca-Cola" },
-        { nombre: "Sushi Burgers", nota: "Promos de sushi burger + Coca-Cola" }
-      ];
+  const grupos = [
+    { nombre: "Hand Roll", nota: "Promos rápidas de hand roll + bebida" },
+    { nombre: "Sushi", nota: "Promos de envueltos + bebida" },
+    { nombre: "Acevichados", nota: "Promos acevichadas + Coca-Cola" },
+    { nombre: "Sushi Burgers", nota: "Promos de sushi burger + Coca-Cola" }
+  ];
 
-      grid.innerHTML = grupos.map(grupo => {
-        const items = promosExpress.filter(p => p.categoriaExpress === grupo.nombre);
-        if (!items.length) return "";
+  grid.innerHTML = grupos.map(grupo => {
+    const items = promosExpress.filter(p => p.categoriaExpress === grupo.nombre);
+    if (!items.length) return "";
+
+    return `
+      <div class="express-category-title">
+        ${grupo.nombre}
+        <small>${grupo.nota}</small>
+      </div>
+
+      ${items.map(promo => {
+        // Verifica si pertenece a la categoría de Acevichados
+        const esAcevichado = promo.categoriaExpress === "Acevichados";
+        const agotado = esAcevichado && !acevichadoActivoCarta;
+        
+        const cardStyle = agotado ? 'opacity: 0.5; filter: grayscale(1); pointer-events: none;' : '';
+        const btnTexto = agotado ? 'Agotado' : 'Elegir esta promo flash';
+        const btnStyle = agotado ? 'background: #999; cursor: not-allowed; box-shadow: none;' : '';
 
         return `
-          <div class="express-category-title">
-            ${grupo.nombre}
-            <small>${grupo.nota}</small>
+        <section class="card express-card" style="${cardStyle}">
+          <div class="express-head">
+            <div>
+              <h2>${promo.nombre} ${agotado ? '<span style="color:var(--rojo); font-size:14px; background:white; padding:2px 6px; border-radius:4px; text-shadow:none; vertical-align:middle;">Agotado</span>' : ''}</h2>
+              <div class="express-tag">${promo.piezas}</div>
+            </div>
+            <div class="express-price">${formatCLP(promo.precio)}</div>
           </div>
-
-          ${items.map(promo => `
-            <section class="card express-card">
-              <div class="express-head">
-                <div>
-                  <h2>${promo.nombre}</h2>
-                  <div class="express-tag">${promo.piezas}</div>
-                </div>
-                <div class="express-price">${formatCLP(promo.precio)}</div>
-              </div>
-              <div class="express-body">
-                <span class="express-drink-pill">🥤 ${promo.bebidaTexto}</span>
-                <ul class="express-list">
-                  ${promo.descripcion.map(i => `<li>${i}</li>`).join("")}
-                </ul>
-                <button class="choose-btn" onclick="abrirPromoExpress('${promo.id}')">Elegir esta promo flash</button>
-              </div>
-            </section>
-          `).join("")}
-        `;
-      }).join("");
-    }
-
+          <div class="express-body">
+            <span class="express-drink-pill">🥤 ${promo.bebidaTexto}</span>
+            <ul class="express-list">
+              ${promo.descripcion.map(i => `<li>${i}</li>`).join("")}
+            </ul>
+            <button class="choose-btn" style="${btnStyle}" ${agotado ? 'disabled' : ''} onclick="abrirPromoExpress('${promo.id}')">${btnTexto}</button>
+          </div>
+        </section>
+      `}).join("")}
+    `;
+  }).join("");
+}
     function abrirPromoExpress(id, datosExistentes = null, indexEditar = null) {
       if (!menuDigitalAbierto()) {
         alert(horarioConfig.mensajeCerrado || "No estamos recibiendo pedidos en este momento.");
