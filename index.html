@@ -1592,12 +1592,12 @@
       </div>
 
       <div class="final-grid">
-        <div class="option-group">
-          <label>Salsas</label>
-          <label class="check-row"><input type="checkbox" id="salsaSoya" checked> Soya</label>
-          <label class="check-row"><input type="checkbox" id="salsaTeriyaki" checked> Teriyaki</label>
-          <label class="check-row"><input type="checkbox" id="sinSalsas"> Sin salsas</label>
-        </div>
+        
+<div class="option-group">
+  <label>Salsas</label>
+  <label class="check-row"><input type="checkbox" id="salsaSoya"> Soya</label>
+  <label class="check-row"><input type="checkbox" id="salsaTeriyaki"> Teriyaki</label>
+</div>
 
         <div class="option-group">
           <label>¿Quieres palillos?</label>
@@ -4069,12 +4069,11 @@ function cerrarConfirmacion() {
     }
 
     function getDatosFinales() {
-      const sinSalsas = document.getElementById("sinSalsas").checked;
-
-      const salsas = sinSalsas ? ["Sin salsas"] : [
-        document.getElementById("salsaSoya").checked ? "Soya" : null,
-        document.getElementById("salsaTeriyaki").checked ? "Teriyaki" : null
-      ].filter(Boolean);
+      
+      const salsas = [
+  document.getElementById("salsaSoya").checked ? "Soya" : null,
+  document.getElementById("salsaTeriyaki").checked ? "Teriyaki" : null
+].filter(Boolean);
 
       const quierePalillos =
         document.querySelector('input[name="palillos"]:checked')?.value || "No";
@@ -4105,13 +4104,6 @@ function cerrarConfirmacion() {
     }
 
     document.addEventListener("change", function(e) {
-      if (e.target && e.target.id === "sinSalsas") {
-        const checked = e.target.checked;
-        document.getElementById("salsaSoya").checked = !checked;
-        document.getElementById("salsaTeriyaki").checked = !checked;
-        document.getElementById("salsaSoya").disabled = checked;
-        document.getElementById("salsaTeriyaki").disabled = checked;
-      }
 
       if (e.target && e.target.name === "palillos") {
         togglePalillos();
