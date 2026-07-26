@@ -835,6 +835,7 @@
     ];
 
     let ingredientesDisponiblesAdmin = [...INGREDIENTES_BASE];
+    let acevichadoDisponibleAdmin = true;
 
     function nombreVisibleIngrediente(nombre) {
       return limpiarIngrediente(nombre);
@@ -844,6 +845,7 @@
       return {
         lista: INGREDIENTES_BASE,
         disponibles: ingredientesDisponiblesAdmin,
+        acevichadoActivo: acevichadoDisponibleAdmin,
         actualizadoEn: new Date().toISOString()
       };
     }
@@ -883,28 +885,31 @@
       }
     }
 
-    async function cargarIngredientesAdmin() {
-      ingredientesDisponiblesAdmin = [...INGREDIENTES_BASE];
+async function cargarIngredientesAdmin() {
+  ingredientesDisponiblesAdmin = [...INGREDIENTES_BASE];
+  acevichadoDisponibleAdmin = true; // Por defecto encendido
 
-      try {
-        const ref = doc(db, "config", "ingredientes");
-        const snap = await getDoc(ref);
+  try {
+    const ref = doc(db, "config", "ingredientes");
+    const snap = await getDoc(ref);
 
-        if (snap.exists()) {
-          const data = snap.data();
-
-          if (Array.isArray(data.disponibles)) {
-            ingredientesDisponiblesAdmin = data.disponibles.filter(ing => INGREDIENTES_BASE.includes(ing));
-          }
-        }
-
-        await setDoc(ref, documentoIngredientesStock(), { merge: true });
-      } catch (error) {
-        console.error("No se pudieron cargar los ingredientes:", error);
+    if (snap.exists()) {
+      const data = snap.data();
+      if (Array.isArray(data.disponibles)) {
+        ingredientesDisponiblesAdmin = data.disponibles.filter(ing => INGREDIENTES_BASE.includes(ing));
       }
-
-      renderIngredientesAdmin();
+      // Leemos el estado, si no existe asume true
+      acevichadoDisponibleAdmin = data.acevichadoActivo !== false;
     }
+
+    await setDoc(ref, documentoIngredientesStock(), { merge: true });
+  } catch (error) {
+    console.error("No se pudieron cargar los ingredientes:", error);
+  }
+
+  renderIngredientesAdmin();
+  renderControlAcevichadoAdmin(); // <-- Llamamos a la animación del switch
+}
 
     window.cambiarDisponibilidadIngrediente = async function cambiarDisponibilidadIngrediente(ingrediente, disponible) {
       if (disponible) {
@@ -926,6 +931,39 @@
     };
 
 
+    // Actualiza la vista del botón (cambia de color y mueve la bolita)
+    function renderControlAcevichadoAdmin() {
+      const checkbox = document.getElementById("checkAcevichado");
+      const bg = document.getElementById("switchBg");
+      const knob = document.getElementById("switchKnob");
+
+      if (checkbox) checkbox.checked = acevichadoDisponibleAdmin;
+      
+      if (bg && knob) {
+        if (acevichadoDisponibleAdmin) {
+          bg.style.backgroundColor = "#25D366"; // Verde activado
+          knob.style.transform = "translateX(22px)";
+        } else {
+          bg.style.backgroundColor = "#ccc"; // Gris desactivado
+          knob.style.transform = "translateX(0)";
+        }
+      }
+    }
+
+    // Guarda el estado en Firebase cuando le haces clic al switch
+    window.cambiarDisponibilidadAcevichado = async function(disponible) {
+      acevichadoDisponibleAdmin = disponible;
+      renderControlAcevichadoAdmin(); 
+
+      try {
+        await setDoc(doc(db, "config", "ingredientes"), documentoIngredientesStock(), { merge: true });
+      } catch (error) {
+        console.error("Error al guardar acevichado:", error);
+        alert("No se pudo guardar el cambio en Firebase.");
+        acevichadoDisponibleAdmin = !disponible; 
+        renderControlAcevichadoAdmin();
+      }
+    };
 
     const HORARIO_CONFIG_DEFAULT = {
       activo: true,
