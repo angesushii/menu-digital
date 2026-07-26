@@ -1288,74 +1288,25 @@
       margin-top: 10px;
     }
 
-/* BURBUJA FLOTANTE DEL CARRITO (Siempre visible en la esquina) */
-    .carrito-flotante-btn {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro));
-      color: white;
-      width: 65px;
-      height: 65px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      box-shadow: 0 10px 25px rgba(214,40,40,.4);
-      cursor: pointer;
-      z-index: 99;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      border: 3px solid white;
-    }
-
-    .carrito-flotante-btn:hover {
-      transform: scale(1.08);
-      box-shadow: 0 14px 30px rgba(214,40,40,.5);
-    }
-
-    /* Contador flotante con el número de productos */
-    .carrito-badge-contador {
-      position: absolute;
-      top: -2px;
-      right: -2px;
-      background: var(--negro);
-      color: white;
-      font-size: 12px;
-      font-weight: 900;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      border: 2px solid white;
-    }
-
-    /* PANEL INFERIOR DESLIZABLE (El carrito cuando se abre) */
     .cart-bar {
       position: fixed;
       left: 0;
       right: 0;
-      bottom: -100%; /* Oculto abajo por defecto */
-      background: rgba(255,255,255,.98);
+      bottom: 0;
+      background: rgba(255,255,255,.96);
       backdrop-filter: blur(12px);
-      box-shadow: 0 -10px 30px rgba(0,0,0,.2);
-      padding: 16px 16px 24px;
-      z-index: 100;
-      border-top-left-radius: 28px;
-      border-top-right-radius: 28px;
-      transition: bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .cart-bar.active {
-      bottom: 0; /* Sube y se muestra en pantalla */
+      box-shadow: 0 -8px 26px rgba(0,0,0,.18);
+      padding: 12px 14px 14px;
+      z-index: 10;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
     }
 
     .cart-content {
       max-width: 980px;
       margin: auto;
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .cart-empty {
@@ -1378,27 +1329,14 @@
       font-size: 22px;
     }
 
-    /* Contenedor para los dos botones del carrito flotante */
-    .cart-actions-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
     .send-btn {
       width: 100%;
       background: var(--verde);
       color: white;
-      font-size: 15px;
-      box-shadow: 0 6px 16px rgba(37,211,102,.25);
+      font-size: 16px;
+      box-shadow: 0 8px 18px rgba(37,211,102,.28);
     }
 
-    .minimizar-btn {
-      width: 100%;
-      background: #111;
-      color: white;
-      font-size: 15px;
-    }
     @media (max-width: 760px) {
       .promo-grid, .promo-express-grid, .builder-options, .envoltura-grid, .final-grid, .repeat-actions, .horario-options { grid-template-columns: 1fr; }
       .ingredient-grid { grid-template-columns: 1fr; }
@@ -1705,21 +1643,10 @@
     </section>
   </main>
 
-<!-- BURBUJA FLOTANTE EN LA ESQUINITA (Siempre visible) -->
-  <div class="carrito-flotante-btn" onclick="toggleBarraCarrito()">
-    🛒
-    <span id="carritoContadorBadge" class="carrito-badge-contador">0</span>
-  </div>
-
-  <!-- PANEL INFERIOR DESLIZABLE (El carrito que sube al presionarlo) -->
-  <div id="cartBar" class="cart-bar">
+  <div class="cart-bar">
     <div class="cart-content">
-      <div class="total"><span>Total del pedido</span><span id="total">$0</span></div>
-      
-      <div class="cart-actions-bar">
-        <button class="minimizar-btn" onclick="toggleBarraCarrito()">Seguir editando</button>
-        <button class="send-btn" onclick="abrirConfirmacionDesdeBarra()">Confirmar pedido</button>
-      </div>
+      <div class="total"><span>Total</span><span id="total">$0</span></div>
+      <button class="send-btn" onclick="abrirConfirmacion()">Continuar pedido</button>
     </div>
   </div>
 
@@ -2942,32 +2869,6 @@ function renderPromosExpress() {
       document.querySelector(".builder-card").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
-    function volverCarta() {
-      itemActivo = null;
-      editandoIndex = null;
-      document.getElementById("configArea").innerHTML = "";
-      document.querySelector(".builder-card").scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    // --- PEGA AQUÍ LAS NUEVAS FUNCIONES ---
-    function toggleBarraCarrito() {
-      const cartBar = document.getElementById("cartBar");
-      if (cartBar) {
-        cartBar.classList.toggle("active");
-      }
-    }
-
-    function abrirConfirmacionDesdeBarra() {
-      if (carrito.length === 0) {
-        alert("Aún no has agregado productos al carrito.");
-        return;
-      }
-      toggleBarraCarrito(); 
-      abrirConfirmacion();   
-    }
-
-
-    
     function renderConfigPromo(datosExistentes = null) {
       const promo = itemActivo;
       const area = document.getElementById("configArea");
@@ -3521,12 +3422,7 @@ if (descuentoItem > 0) {
       const total = subtotal - descuentoPromoA;
 
       document.getElementById("total").textContent = formatCLP(total);
-      // Actualiza el número de productos en la burbuja flotante
-      const totalUnidades = carrito.reduce((acc, item) => acc + Number(item.cantidad || 1), 0);
-      const badgeContador = document.getElementById("carritoContadorBadge");
-      if (badgeContador) badgeContador.textContent = totalUnidades;
 
-      
       if (carrito.length === 0) {
         cart.innerHTML = '<div class="cart-empty">Aún no has agregado productos.</div>';
         actualizarPreguntaBebidasFinal();
@@ -3693,6 +3589,7 @@ async function abrirConfirmacion() {
   actualizarCampoTelefonoFinal();
 
   // Oculta solo el botón de continuar, pero mantiene el total visible
+  document.querySelector(".send-btn").style.display = "none";
 
   document.getElementById("finalPanel")
     .scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3706,7 +3603,7 @@ function cerrarConfirmacion() {
   }
 
   // Vuelve a mostrar el botón de continuar
-
+  document.querySelector(".send-btn").style.display = "block";
 
   document.querySelector(".cart-panel")
     .scrollIntoView({ behavior: "smooth", block: "start" });
