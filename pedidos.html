@@ -667,17 +667,18 @@
     <div id="ingredientesStatus" class="ingredientes-status">Cargando ingredientes...</div>
 
     <!-- Control Maestro del Acevichado -->
-    <div style="margin-top: 20px; padding: 16px; background: #fff8e8; border: 2px solid #f0d28a; border-radius: 16px;">
-      <h3 style="margin: 0 0 8px; color: #7a5300; display: flex; justify-content: space-between; align-items: center;">
-        🐟 Control Maestro de Acevichado
-        <span id="badgeAcevichadoAdmin" style="font-size: 14px; padding: 4px 10px; border-radius: 999px; background: #fff; border: 1px solid #f0d28a;">Cargando...</span>
-      </h3>
-      <p class="muted" style="margin: 0 0 12px; font-size: 14px;">Al marcarlo como agotado, se desactivará la opción de armarlo y todas sus promos flash/clásicas en la carta digital.</p>
-      <label class="ingrediente-check" id="checkContainerAcevichado">
-        <input type="checkbox" id="checkAcevichado" onchange="cambiarDisponibilidadAcevichado(this.checked)">
-        Sushi Acevichado disponible en carta
-      </label>
-    </div>
+<div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; background: #f8f8f8; padding: 14px 18px; border-radius: 16px; border: 1px solid #eee;">
+  <div>
+    <strong style="display: block; color: #111; font-size: 16px;">🐟 Sushi Acevichado</strong>
+    <span style="color: #666; font-size: 13px;">Activa o desactiva su venta en la carta.</span>
+  </div>
+  
+  <label style="position: relative; display: inline-block; width: 50px; height: 28px; margin: 0;">
+    <input type="checkbox" id="checkAcevichado" style="opacity: 0; width: 0; height: 0;" onchange="cambiarDisponibilidadAcevichado(this.checked)">
+    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;" id="switchBg"></span>
+    <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;" id="switchKnob"></span>
+  </label>
+</div>
   </div>
 </section>
 
