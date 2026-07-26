@@ -652,20 +652,34 @@
 
     <section id="panel" class="hidden">
 
-      <section class="ingredientes-admin-card">
-        <div class="ingredientes-admin-head" onclick="toggleIngredientesPanel()">
-          <div>
-            <h2>🥑 Ingredientes</h2>
-            <div class="muted">Activa o desactiva ingredientes según stock.</div>
-          </div>
-          <button type="button" class="ingredientes-toggle-btn">Ver / ocultar</button>
-        </div>
+<section class="ingredientes-admin-card">
+  <div class="ingredientes-admin-head" onclick="toggleIngredientesPanel()">
+    <div>
+      <h2>🥑 Ingredientes y Acevichado</h2>
+      <div class="muted">Activa o desactiva ingredientes y opciones del menú según stock.</div>
+    </div>
+    <button type="button" class="ingredientes-toggle-btn">Ver / ocultar</button>
+  </div>
 
-        <div id="ingredientesPanel" class="ingredientes-panel">
-          <div id="ingredientesAdminGrid" class="ingredientes-grid"></div>
-          <div id="ingredientesStatus" class="ingredientes-status">Cargando ingredientes...</div>
-        </div>
-      </section>
+  <div id="ingredientesPanel" class="ingredientes-panel">
+    <!-- Lista de ingredientes normales -->
+    <div id="ingredientesAdminGrid" class="ingredientes-grid"></div>
+    <div id="ingredientesStatus" class="ingredientes-status">Cargando ingredientes...</div>
+
+    <!-- Control Maestro del Acevichado -->
+    <div style="margin-top: 20px; padding: 16px; background: #fff8e8; border: 2px solid #f0d28a; border-radius: 16px;">
+      <h3 style="margin: 0 0 8px; color: #7a5300; display: flex; justify-content: space-between; align-items: center;">
+        🐟 Control Maestro de Acevichado
+        <span id="badgeAcevichadoAdmin" style="font-size: 14px; padding: 4px 10px; border-radius: 999px; background: #fff; border: 1px solid #f0d28a;">Cargando...</span>
+      </h3>
+      <p class="muted" style="margin: 0 0 12px; font-size: 14px;">Al marcarlo como agotado, se desactivará la opción de armarlo y todas sus promos flash/clásicas en la carta digital.</p>
+      <label class="ingrediente-check" id="checkContainerAcevichado">
+        <input type="checkbox" id="checkAcevichado" onchange="cambiarDisponibilidadAcevichado(this.checked)">
+        Sushi Acevichado disponible en carta
+      </label>
+    </div>
+  </div>
+</section>
 
 
 
